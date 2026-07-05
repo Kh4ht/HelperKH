@@ -2,7 +2,7 @@
 
 **A comprehensive Unity utilities package for game development**
 
-HelperKH is a robust collection of systems and extensions designed to accelerate Unity game development. It provides battle-tested solutions for health management, data persistence, animation, performance optimization, and editor workflows.
+HelperKH is a robust collection of systems and extensions that I designed throughout my journey with Unity to accelerate game development. It provides battle-tested solutions for health management, data persistence, animation, performance optimization, and editor workflows.
 
 ---
 
