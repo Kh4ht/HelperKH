@@ -1,6 +1,6 @@
 {
     "name": "com.kh4ht.helperkh",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "displayName": "HelperKH",
     "description": "A helper and utility package including UIAnimator and utility classes.",
     "dependencies": {
