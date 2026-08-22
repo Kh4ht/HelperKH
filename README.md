@@ -76,26 +76,32 @@ health.ApplyDamage(new KHDamage {
     overTimeDamagePercent = 0.2f, 
     duration = 3f 
 });
-
+```
+```csharp
 // Save & Load
 KHSaveSystem.Save(gameData);
 var loadedData = KHSaveSystem.Load<GameData>();
-
+```
+```csharp
 // Animation
 animator.PlaySpriteAnimation(frames, loopCount: -1, onFrame: i => UpdateFrame(i));
-
+```
+```csharp
 // Collection Operations
 list.KHForEach((item, index) => ProcessItem(item, index));
 var randomItem = list.KHPickRandom();
-
+```
+```csharp
 // Timer
 if (timer.DidExceed(5.0)) { /* 5 seconds passed */ }
-
+```
+```csharp
 // Debug Logging
 KHDebug.Log("Player teleported", XMLC.Green);
 KHDebug.LogWarning("Low health warning", XMLC.Yellow);
 KHDebug.LogError("Critical error", XMLC.Red);
-
+```
+```csharp
 // Performance
 if (Kh.SqrDistanceIsLessThan(player, enemy, 10f)) { 
     /* Within 10 units */ 
