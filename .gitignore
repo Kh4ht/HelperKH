@@ -107,3 +107,5 @@ InitTestScene*.unity*
 
 # macOS system file
 .DS_Store
+**/.DS_Store
+Runtime/.DS_Store

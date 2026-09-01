@@ -8,24 +8,13 @@ namespace KH
 {
     public static class Kh
     {
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region  FIELDS
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region FIELDS
 
-        private const string _STRIPE = "— — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — ";
-        private const string _STRIPE_2 = "—— —— —— —— —— —— —— —— —— —— —— —— —— —— —— —— —— —— —— —— —— —— —— —— ";
-        private const string _DOTTED = "•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••";
-        private const string _LINE = "———————————————————————————————————————————————————————————————————————————————";
-        public const string LINE = _LINE + _LINE + _LINE;
-        public const string DOTTED_LINE = _DOTTED + _DOTTED + _DOTTED;
-        public const string STRIPE_LINE_1 = _STRIPE + _STRIPE + _STRIPE;
-        public const string STRIPE_LINE_2 = _STRIPE_2 + _STRIPE_2 + _STRIPE_2;
 
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region  CHANGE CURSOR
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region CHANGE CURSOR
+
 
         /// <summary>Changes the <see cref="Cursor"/> texture to a 
         /// custom <paramref name="texture2D"/> with a specified hotspot alignment.</summary>
@@ -37,9 +26,8 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region  GET MOUSE POS
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region GET MOUSE POS
+
 
         /// <returns>The current mouse position, based on main camera</returns>
         public static Vector2 GetMouseWorldPos()
@@ -56,9 +44,8 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region  IsMouseOverUI
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region IsMouseOverUI
+
 
         /// <returns>True if the mouse pointer is currently over any UI element.</returns>
         public static bool IsMouseOverUI()
@@ -67,9 +54,8 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region  IS EMPTY
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region IS EMPTY
+
 
         /// <returns>True if the <paramref name="list"/> is null or empty.</returns>
         public static bool KHIsEmpty<T>(this IList<T> list)
@@ -84,9 +70,8 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region  PICK RANDOM
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region PICK RANDOM
+
 
         /// <returns>A random item from a <paramref name="list"/>.</returns>
         public static T KHPickRandom<T>(this IList<T> list)
@@ -94,6 +79,14 @@ namespace KH
             return list.KHIsEmpty() ? default : list[Random.Range(0, list.Count)];
         }
 
+
+        /// <summary>
+        /// Returns a random selection of unique items from the specified list.
+        /// </summary>
+        /// <typeparam name="T">The type of elements contained in the list.</typeparam>
+        /// <param name="list">The list to select items from.</param>
+        /// <param name="count">The number of unique random items to return.</param>
+        /// <returns>A list containing <paramref name="count"/> unique random items from <paramref name="list"/>.</returns>
         public static List<T> KHPickRandom<T>(this IList<T> list, int count)
         {
             // Validate inputs
@@ -119,10 +112,42 @@ namespace KH
             return shuffled.GetRange(0, count);
         }
 
+
+        /// <summary>
+        /// Returns a random character from the specified string.
+        /// </summary>
+        /// <param name="str">The string to select a character from.</param>
+        /// <returns>A random character from <paramref name="str"/>.</returns>
+        public static char KHPickRandom(this string str)
+        {
+            return str[Random.Range(0, str.Length)];
+        }
+
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region  HAS TYPE
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region GenerateId
+
+
+        /// <summary>
+        /// Generates a unique identifier by combining a base name with a random suffix.
+        /// </summary>
+        /// <param name="uniqueName">The base name used at the beginning of the generated identifier.</param>
+        /// <param name="additionalRandomCharCount">The number of random characters to append to the identifier suffix.</param>
+        /// <returns>A generated identifier string that includes the provided name and random characters.</returns>
+        public static string GenerateId(string uniqueName, int additionalRandomCharCount)
+        {
+            string id = uniqueName + "__";
+
+            const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=|\\\'\"/?.>,<";
+
+            for (var i = 0; i < additionalRandomCharCount; i++)
+                id += characters.KHPickRandom();
+
+            return id.Replace(" ", "_");
+        }
+
+        #endregion
+        #region HAS TYPE
+
 
         /// <summary>
         /// Checks if the enumerable contains an element of type T.
@@ -137,9 +162,8 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region  DESTROY CHILDREN IMMEDIATE
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region DESTROY CHILDREN IMMEDIATE
+
 
         public static void KHDestroyAllChildrenImmediate(this Transform parent)
         {
@@ -153,14 +177,13 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region  SQUARE DISTANCE
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region SQUARE DISTANCE
+
 
         ///<summary>for performance optimization.</summary>
         /// <returns>The Squared distance between <paramref name="a"/> 
         /// and <paramref name="b"/></returns>
-        public static float SqrDistance(Vector3 a, Vector3 b)
+        public static float GetSqrDistance(Vector3 a, Vector3 b)
         {
             // Check for special invalid values (not null since Vector3 is a struct)
             if (a == Vector3.negativeInfinity || b == Vector3.negativeInfinity)
@@ -176,7 +199,7 @@ namespace KH
         ///<summary>for performance optimization.</summary>
         /// <returns>The Squared distance between <paramref name="a"/> 
         /// and <paramref name="b"/></returns>
-        public static float SqrDistance(Transform a, Transform b)
+        public static float GetSqrDistance(Transform a, Transform b)
         {
             if (a == null || b == null)
             {
@@ -197,7 +220,7 @@ namespace KH
         ///<summary>for performance optimization.</summary>
         /// <returns>The Squared distance between <paramref name="a"/> 
         /// and <paramref name="b"/></returns>
-        public static float SqrDistance(MonoBehaviour a, MonoBehaviour b)
+        public static float GetSqrDistance(MonoBehaviour a, MonoBehaviour b)
         {
             if (a == null || b == null)
             {
@@ -221,7 +244,7 @@ namespace KH
         /// is less than the <paramref name="threshold"/>.</returns>
         public static bool SqrDistanceIsLessThan(Vector3 a, Vector3 b, float threshold)
         {
-            return SqrDistance(a, b) < threshold * threshold;
+            return GetSqrDistance(a, b) < threshold * threshold;
         }
 
         ///<summary>for performance optimization.</summary>
@@ -229,7 +252,7 @@ namespace KH
         /// is less than the <paramref name="threshold"/>.</returns>
         public static bool SqrDistanceIsLessThan(Transform a, Transform b, float threshold)
         {
-            return SqrDistance(a, b) <= threshold * threshold;
+            return GetSqrDistance(a, b) <= threshold * threshold;
         }
 
         ///<summary>for performance optimization.</summary>
@@ -237,7 +260,7 @@ namespace KH
         /// is less than the <paramref name="threshold"/>.</returns>
         public static bool SqrDistanceIsLessThan(MonoBehaviour a, MonoBehaviour b, float threshold)
         {
-            return SqrDistance(a, b) <= threshold * threshold;
+            return GetSqrDistance(a, b) <= threshold * threshold;
         }
 
         public static bool SqrDistanceIsLessThan(float dis, float threshold)
@@ -246,9 +269,8 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region MOVE TOWARDS
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+
 
         /// <summary>
         /// Moves the <see cref="Transform"/> towards the <paramref name="targetPos"/> at a constant <paramref name="moveSpeed"/>.
@@ -259,9 +281,8 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region GET DIRECTION
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+
 
         /// <returns>
         /// A <see cref="Vector2"/> representing the direction from <paramref name="currentPos"/> to <paramref name="targetPos"/>.
@@ -324,9 +345,8 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region GET ANGLE
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+
 
         public static float KHGetAngle(this Vector2 dir)
         {
@@ -348,55 +368,8 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region DOT
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-
-        public static Coroutine StartDot(
-            this MonoBehaviour runner,
-            float duration,
-            float interval,
-            System.Action onTick = null,
-            System.Action onComplete = null)
-        {
-            if (runner == null || !runner)
-                return null;
-
-            return runner.StartCoroutine(Dot(runner, duration, interval, onTick, onComplete));
-        }
-
-        private static IEnumerator Dot(
-            MonoBehaviour runner,
-            float duration,
-            float interval,
-            System.Action onTick,
-            System.Action onComplete)
-        {
-            float elapsed = 0f;
-
-            while (elapsed < duration)
-            {
-                // 🔥 stop immediately if object is destroyed
-                if (!runner)
-                    yield break;
-
-                yield return new WaitForSeconds(interval);
-
-                if (!runner)
-                    yield break;
-
-                onTick?.Invoke();
-
-                elapsed += interval;
-            }
-
-            onComplete?.Invoke();
-        }
-
-        #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region SORTING ORDER
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+
 
         /// <summary>
         /// Updates the sprite's sorting order based on its Y position in the world.
@@ -419,15 +392,21 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region RUN BATCHED
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
-        public static void KHRunBatched(
-            this MonoBehaviour runner,
-            int count,
-            System.Action<int> action,
-            int batchSize = 5)
+
+        /// <summary>
+        /// Executes an action for a specified number of indexed items, processing
+        /// the items in batches and yielding between batches when necessary.
+        /// </summary>
+        /// <param name="runner">The MonoBehaviour used to start the coroutine.</param>
+        /// <param name="count">How many times to run the <paramref name="action"/>.</param>
+        /// <param name="action">The action to invoke for each item index.</param>
+        /// <param name="batchSize">The number of items to process before yielding.</param>
+        public static void KHRunBatched(this MonoBehaviour runner,
+                                        int count,
+                                        System.Action<int> action,
+                                        int batchSize = 5)
         {
             if (count <= batchSize)
             {
@@ -460,8 +439,3 @@ namespace KH
         #endregion
     }
 }
-
-
-
-
-

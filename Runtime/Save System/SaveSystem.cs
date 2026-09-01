@@ -8,9 +8,7 @@ namespace KH
 {
     public static class KHSaveSystem
     {
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region FIELDS
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         private static readonly string FILE_NAME = "save.json";
         private static readonly string TEMP_NAME = "save.json.tmp";
@@ -27,9 +25,7 @@ namespace KH
         private static string BackupPath => Path.Combine(Application.persistentDataPath, BACKUP_NAME);
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region BACKUP RECOVERY
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         public static void RecoverFromBackup()
         {
@@ -38,9 +34,7 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region ENCRYPTION
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         private static string Encrypt(string plainText) => Crypto(plainText, true);
         private static string Decrypt(string cipherText) => Crypto(cipherText, false);
@@ -94,9 +88,7 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region LOAD
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         public static T Load<T>() where T : new()
         {
@@ -118,9 +110,7 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region SAVE
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         public static void Save<T>(T data)
         {
