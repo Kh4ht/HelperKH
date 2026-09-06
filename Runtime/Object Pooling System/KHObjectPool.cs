@@ -27,6 +27,9 @@ namespace KH
         public int CountActive => _active.Count;
         public int CountTotal => CountAvailable + CountActive;
 
+        /// <summary>Read-only view of currently active (spawned) instances.</summary>
+        public IReadOnlyCollection<T> ActiveInstances => _active;
+
         // ── Constructor ───────────────────────────────────────────────────────
         /// <param name="prefab">Template object to clone.</param>
         /// <param name="initialSize">How many to pre-warm.</param>
@@ -52,7 +55,8 @@ namespace KH
         public T Spawn(Vector3 position = default, Quaternion rotation = default)
         {
             T instance = GetOrCreate();
-            if (instance == null) return null;         // pool exhausted, not expandable
+            if (instance == null)
+                return null;         // pool exhausted, not expandable
 
             instance.transform.SetPositionAndRotation(position, rotation);
             instance.gameObject.SetActive(true);

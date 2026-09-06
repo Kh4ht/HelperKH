@@ -1,13 +1,11 @@
-using System;
-
+using UnityEngine;
+using KH;
 namespace KH
 {
-    [Serializable]
+    [System.Serializable]
     public class KHTimer
     {
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region FIELDS
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         // PRIVATE
         private const double TIMER_MAX_VALUE = double.MaxValue - 100;
@@ -21,36 +19,30 @@ namespace KH
         public double Hours => Seconds / 3600;
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region UPDATE
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region RUN
 
         /// <summary>Called on Update() to run the timer</summary>
-        public void Update()
+        public void Run()
         {
             // Prevents the timer from overflowing and becoming negative. The 100 is just a buffer to prevent it from getting too close to double.MaxValue, which could cause issues with the DidExceed() method.
             if (Seconds < TIMER_MAX_VALUE)
-            {
                 Seconds += UnityEngine.Time.deltaTime;
-            }
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region DID EXCEED
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         /// <returns>True: if the timer exceeded the <paramref name="duration"/></returns>
         public bool DidExceed(double duration)
         {
             if (duration < 0)
             {
-                KHDebug.LogWarning("KHTimer.DidExceed() was given a negative duration value. It will always return true.");
-                return true;
+                Debug.LogWarning($"{nameof(duration)} is negative. It will return FALSE.".SetDebugLogColor(KHUtils.XMLColors.Yellow));
+                return false;
             }
             else if (duration > TIMER_MAX_VALUE)
             {
-                KHDebug.LogWarning("KHTimer.DidExceed() was given a duration value that exceeded double.MaxValue. It will always return false.");
+                Debug.LogWarning($"{nameof(duration)} is greater {nameof(double.MaxValue)}. It will return FALSE.".SetDebugLogColor(KHUtils.XMLColors.Yellow));
                 return false;
             }
 
@@ -58,9 +50,7 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region RESET
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         /// <summary>
         /// Restarts the timer and optionally gives it a headstart. A headstart is a value that the timer will start at instead of 0. For example, if you want the timer to start at 0.5 seconds, you would give it a headstart of 0.5. This can be useful for things like cooldowns, where you want the timer to start at a certain point instead of 0.
@@ -71,17 +61,17 @@ namespace KH
             if (timerHeadstart < 0)
             {
                 Seconds = 0;
-                KHDebug.LogWarning("KHTimer.Restart() was given a negative timerHeadstart value. It has been set to 0 instead.");
+                Debug.LogWarning($"{nameof(timerHeadstart)} is negative. It has been set to 0.".SetDebugLogColor(KHUtils.XMLColors.Yellow));
+                return;
             }
-            else if (timerHeadstart > TIMER_MAX_VALUE)
+            if (timerHeadstart > TIMER_MAX_VALUE)
             {
-                Seconds = double.MaxValue;
-                KHDebug.LogWarning("KHTimer.Restart() was given a timerHeadstart value that exceeded double.MaxValue. It has been set to double.MaxValue instead.");
+                Seconds = 0;
+                Debug.LogWarning($"{nameof(timerHeadstart)} exceeded {nameof(double.MaxValue)}. It has been set to 0.".SetDebugLogColor(KHUtils.XMLColors.Yellow));
+                return;
             }
-            else
-            {
-                Seconds = 0 + timerHeadstart;
-            }
+
+            Seconds = 0 + timerHeadstart;
         }
 
         #endregion

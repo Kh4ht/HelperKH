@@ -8,15 +8,13 @@ namespace KH
 {
     public sealed class KHSpriteAnimator
     {
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region CONSTRUCTOR
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         public KHSpriteAnimator(MonoBehaviour newMonoBehaviour,
                               SpriteRenderer newRenderer,
                               int newFrameRate = 12)
         {
-            _renderer = newRenderer;
+            renderer = newRenderer;
             _monoBehaviour = newMonoBehaviour;
             FrameRate = newFrameRate;
 
@@ -24,17 +22,15 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region FIELDS
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         private readonly Transform _transform;
-        private readonly SpriteRenderer _renderer;
+        private readonly SpriteRenderer renderer;
         private readonly MonoBehaviour _monoBehaviour;
 
 
         private Coroutine _animCoro;
-        private List<Sprite> _currentAnimation;
+        private List<Sprite> currentAnimation;
 
 
         private int _frameRate;
@@ -45,9 +41,7 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
         #region PUBLIC METHODS
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
 
         /// <summary>
         /// Plays a frame-by-frame sprite animation on a <see cref="SpriteRenderer"/> using coroutine.
@@ -63,34 +57,34 @@ namespace KH
             // Null or empty check for the frames list
             if (frames == null || frames.Count == 0)
             {
-                KHDebug.Log("[AnimationController] Frames list is null or empty.");
+                Debug.Log($"<b><color=white>[{nameof(KHSpriteAnimator)}] Frames list is null or empty.</color></b>");
                 onComplete?.Invoke();
                 return;
             }
 
-            if (_renderer == null)
+            if (renderer == null)
             {
-                KHDebug.LogWarning("[AnimationController] SpriteRenderer is missing.");
+                Debug.LogWarning($"<b><color=yellow>[{nameof(KHSpriteAnimator)}] {nameof(renderer)} is missing.</color></b>");
                 onComplete?.Invoke();
                 return;
             }
 
             // Don't restart if already playing the same animation
-            if (_currentAnimation == frames && loopCount < 0)
+            if (currentAnimation == frames && loopCount < 0)
                 return;
 
             // Warn if OnComplete won't be called
             if (loopCount < 0 && onComplete != null)
             {
-                KHDebug.LogWarning("[AnimationController] OnComplete will never be called for infinite loops.");
+                Debug.LogWarning($"<b><color=yellow>[{nameof(KHSpriteAnimator)}] {nameof(onComplete)} will never be called for infinite loops.</color></b>");
             }
 
-            _currentAnimation = frames;
+            currentAnimation = frames;
 
             if (_animCoro != null)
                 _monoBehaviour.StopCoroutine(_animCoro);
 
-            _animCoro = _monoBehaviour.StartCoroutine(PlayAnimationCoroutine(_renderer, frames, loopCount, onFrame, onComplete));
+            _animCoro = _monoBehaviour.StartCoroutine(PlayAnimationCoroutine(renderer, frames, loopCount, onFrame, onComplete));
         }
 
         IEnumerator PlayAnimationCoroutine(SpriteRenderer renderer,
@@ -101,13 +95,13 @@ namespace KH
         {
             if (renderer == null)
             {
-                KHDebug.LogWarning("[AnimationController] SpriteRenderer is null in coroutine.");
+                Debug.LogWarning($"<b><color=yellow>[{nameof(KHSpriteAnimator)}] {nameof(renderer)} is null in coroutine.</color></b>");
                 yield break;
             }
 
             if (frames == null || frames.Count == 0)
             {
-                KHDebug.Log("[AnimationController] Frames list is null or empty in coroutine.");
+                Debug.Log($"<b><color=white>[{nameof(KHSpriteAnimator)}] Frames list is null or empty in coroutine.</color></b>");
                 yield break;
             }
 
@@ -129,7 +123,7 @@ namespace KH
                 loops++;
             }
 
-            _currentAnimation = null;
+            currentAnimation = null;
 
             if (loopCount >= 0)
                 onComplete?.Invoke();
@@ -140,7 +134,7 @@ namespace KH
             if (_animCoro != null)
                 _monoBehaviour.StopCoroutine(_animCoro);
 
-            _currentAnimation = null;
+            currentAnimation = null;
         }
 
         #endregion

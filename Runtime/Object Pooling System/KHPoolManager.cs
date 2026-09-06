@@ -64,14 +64,14 @@ namespace KH
         /// </summary>
         public KHObjectPool<T> Register<T>(string key,
                                            T prefab,
-                                           int initialSize = 10,
+                                           int initialSize = 0,
                                            bool expandable = true,
                                            int maxSize = 0) where T : MonoBehaviour, IKHPoolable
         {
             if (_registry.ContainsKey(key))
             {
                 Debug.LogWarning($"[PoolManager] Pool '{key}' is already registered. Returning existing pool.");
-                return Get<T>(key);
+                return GetPool<T>(key);
             }
 
             // create a dedicated parent transform to keep the hierarchy tidy
@@ -86,7 +86,7 @@ namespace KH
         // ── Access ────────────────────────────────────────────────────────────
 
         /// <summary>Retrieve a registered pool by key.</summary>
-        public KHObjectPool<T> Get<T>(string key) where T : MonoBehaviour, IKHPoolable
+        public KHObjectPool<T> GetPool<T>(string key) where T : MonoBehaviour, IKHPoolable
         {
             if (_registry.TryGetValue(key, out var pool))
                 return pool as KHObjectPool<T>;
@@ -96,7 +96,7 @@ namespace KH
         }
 
         /// <summary>Retrieve all registered pools.</summary>
-        public IEnumerable<KHObjectPool<T>> GetAll<T>() where T : MonoBehaviour, IKHPoolable
+        public IEnumerable<KHObjectPool<T>> GetAllPools<T>() where T : MonoBehaviour, IKHPoolable
         {
             foreach (object value in _registry.Values)
             {
@@ -110,19 +110,19 @@ namespace KH
                           Vector3 position = default,
                           Quaternion rotation = default) where T : MonoBehaviour, IKHPoolable
         {
-            return Get<T>(key)?.Spawn(position, rotation);
+            return GetPool<T>(key)?.Spawn(position, rotation);
         }
 
         /// <summary>Convenience: despawn directly via key.</summary>
         public void Despawn<T>(string key, T instance) where T : MonoBehaviour, IKHPoolable
         {
-            Get<T>(key)?.Despawn(instance);
+            GetPool<T>(key)?.Despawn(instance);
         }
 
         /// <summary>Despawn every active object in a pool.</summary>
         public void DespawnAll<T>(string key) where T : MonoBehaviour, IKHPoolable
         {
-            Get<T>(key)?.DespawnAll();
+            GetPool<T>(key)?.DespawnAll();
         }
 
         /// <summary>Destroy all instances and remove the pool from the registry.</summary>
@@ -135,8 +135,8 @@ namespace KH
             }
         }
 
-        /// <summary>True if any registered pool has at least one active instance.</summary>
-        public bool AnyActive()
+        /// <summary>True if any registered pool has at least one active instance (any type).</summary>
+        public bool GetAnyActive()
         {
             foreach (var kvp in _registry)
             {
@@ -147,12 +147,38 @@ namespace KH
             return false;
         }
 
+        /// <summary>True if the pool of type T has at least one active instance.</summary>
+        public bool GetAnyActive<T>() where T : MonoBehaviour, IKHPoolable
+        {
+            foreach (KHObjectPool<T> pool in GetAllPools<T>())
+            {
+                if (pool.CountActive > 0)
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>Enumerates every active instance of type T across all registered pools of that type.</summary>
+        public IEnumerable<T> GetAllActive<T>() where T : MonoBehaviour, IKHPoolable
+        {
+            foreach (KHObjectPool<T> pool in GetAllPools<T>())
+            {
+                List<T> poolSnapshot = new(pool.ActiveInstances); // copy because Despawn modifies _active
+
+                foreach (T instance in poolSnapshot)
+                {
+                    yield return instance;
+                }
+            }
+        }
+
         /// <summary>Total active instances across every pool.</summary>
-        public int TotalActiveCount()
+        public int GetTotalActiveCount()
         {
             int total = 0;
 
-            foreach (var kvp in _registry)
+            foreach (KeyValuePair<string, object> kvp in _registry)
             {
                 if (kvp.Value is IPoolInfo info)
                     total += info.CountActive;
@@ -164,7 +190,7 @@ namespace KH
         #endregion
     }
 
-    #region INTERNAL INTERFACE
+    #region INTERFACE
 
     // Internal marker so PoolManager can dispose pools without knowing T.
     internal interface IDisposablePool { void Dispose(); }

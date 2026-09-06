@@ -2,8 +2,14 @@ using UnityEngine;
 
 namespace KH
 {
-    static class KHMethods
+    static class KHUtils
     {
+        public enum XMLColors
+        {
+            White,
+            Red,
+            Yellow,
+        }
         public static Vector2 GetHotspotPosition(Texture2D texture, CursorHotspot position)
         {
             float width = texture.width;
@@ -25,6 +31,31 @@ namespace KH
 
                 _ => new Vector2(0, height), // default fallback
             };
+        }
+
+        public static string SetDebugLogColor(this string message, XMLColors color)
+        {
+            string openTag = $"<b><color={Extract(color)}>";
+            string closeTag = $"</b></color>";
+
+            return openTag + message + closeTag;
+        }
+
+        private static string Extract(XMLColors color)
+        {
+            switch (color)
+            {
+                case XMLColors.Red:
+                    return "#FF2626";
+
+                case XMLColors.Yellow:
+                    return "yellow";
+
+                case XMLColors.White:
+                    return "white";
+            }
+
+            return "white";
         }
     }
 }

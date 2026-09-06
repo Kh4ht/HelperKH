@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
-
+using KH;
 namespace KH
 {
     public static class Kh
@@ -21,7 +21,7 @@ namespace KH
         /// <param name="hotspotPosition">The position on the texture to use as the cursor's hotspot.</param>
         public static void ChangeCursor(Texture2D texture2D, CursorHotspot hotspotPosition = CursorHotspot.TopLeft)
         {
-            Vector2 hotSpot = KHMethods.GetHotspotPosition(texture2D, hotspotPosition);
+            Vector2 hotSpot = KHUtils.GetHotspotPosition(texture2D, hotspotPosition);
             Cursor.SetCursor(texture2D, hotSpot, CursorMode.Auto);
         }
 
@@ -62,7 +62,7 @@ namespace KH
         {
             if (list == null)
             {
-                KHDebug.LogError($"{nameof(list)} is NULL");
+                Debug.LogError($"{nameof(list)} is NULL".SetDebugLogColor(KHUtils.XMLColors.Red));
                 return true;
             }
 
@@ -92,7 +92,7 @@ namespace KH
             // Validate inputs
             if (list.KHIsEmpty() || count < 1 || count > list.Count)
             {
-                KHDebug.LogError($"Invalid parameters: list size={list?.Count ?? 0}, count={count}");
+                Debug.LogError($"Invalid parameters: list size={list?.Count ?? 0}, count={count}".SetDebugLogColor(KHUtils.XMLColors.Red));
                 return new List<T>();
             }
 
@@ -135,7 +135,8 @@ namespace KH
         /// <returns>A generated identifier string that includes the provided name and random characters.</returns>
         public static string GenerateId(string uniqueName, int additionalRandomCharCount)
         {
-            string id = uniqueName + "__";
+            string id = "";
+            id = string.IsNullOrEmpty(uniqueName) ? "" : uniqueName + "__";
 
             const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=|\\\'\"/?.>,<";
 
@@ -188,8 +189,8 @@ namespace KH
             // Check for special invalid values (not null since Vector3 is a struct)
             if (a == Vector3.negativeInfinity || b == Vector3.negativeInfinity)
             {
-                KHDebug.LogWarning($"[HDistance] Invalid world position (Vector3.negativeInfinity)." +
-                                  $"a: {a}, b: {b}");
+                Debug.LogWarning($"Invalid world position (Vector3.negativeInfinity)." +
+                                  $"a: {a}, b: {b}".SetDebugLogColor(KHUtils.XMLColors.Yellow));
                 return 0f;
             }
 
@@ -203,14 +204,14 @@ namespace KH
         {
             if (a == null || b == null)
             {
-                KHDebug.LogWarning($"[HDistance] Transform is null. a: {a}, b: {b}");
+                Debug.LogWarning($"[HDistance] Transform is null. a: {a}, b: {b}".SetDebugLogColor(KHUtils.XMLColors.Yellow));
                 return 0f;
             }
             // Check for special invalid values (not null since Vector3 is a struct)
             if (a.position == Vector3.negativeInfinity || b.position == Vector3.negativeInfinity)
             {
-                KHDebug.LogWarning($"[HDistance] Invalid world position (Vector3.negativeInfinity)." +
-                                  $"a: {a}, b: {b}");
+                Debug.LogWarning($"[HDistance] Invalid world position (Vector3.negativeInfinity)." +
+                                   $"a: {a}, b: {b}".SetDebugLogColor(KHUtils.XMLColors.Yellow));
                 return 0f;
             }
 
@@ -224,15 +225,15 @@ namespace KH
         {
             if (a == null || b == null)
             {
-                KHDebug.LogWarning($"[HDistance] object is null. a: {a}, b: {b}");
+                Debug.LogWarning($"[HDistance] object is null. a: {a}, b: {b}".SetDebugLogColor(KHUtils.XMLColors.Yellow));
                 return 0f;
             }
 
             // Check for special invalid values (not null since Vector3 is a struct)
             if (a.transform.position == Vector3.negativeInfinity || b.transform.position == Vector3.negativeInfinity)
             {
-                KHDebug.LogWarning($"[HDistance] Invalid world position (Vector3.negativeInfinity)." +
-                                $"a: {a}, b: {b}");
+                Debug.LogWarning($"[HDistance] Invalid world position (Vector3.negativeInfinity)." +
+                                $"a: {a}, b: {b}".SetDebugLogColor(KHUtils.XMLColors.Yellow));
                 return 0f;
             }
 
@@ -309,12 +310,12 @@ namespace KH
         {
             if (current == null)
             {
-                KHDebug.LogError($"{nameof(current)} is NULL");
+                Debug.LogError($"{nameof(current)} is NULL".SetDebugLogColor(KHUtils.XMLColors.Yellow));
                 return Vector2.zero;
             }
             if (target == null)
             {
-                KHDebug.LogError($"{nameof(target)} is NULL");
+                Debug.LogError($"{nameof(target)} is NULL".SetDebugLogColor(KHUtils.XMLColors.Yellow));
                 return Vector2.zero;
             }
 
@@ -330,12 +331,12 @@ namespace KH
         {
             if (current == null)
             {
-                KHDebug.LogError($"{nameof(current)} is NULL");
+                Debug.LogError($"{nameof(current)} is NULL".SetDebugLogColor(KHUtils.XMLColors.Red));
                 return Vector2.zero;
             }
             if (target == null)
             {
-                KHDebug.LogError($"{nameof(target)} is NULL");
+                Debug.LogError($"{nameof(target)} is NULL".SetDebugLogColor(KHUtils.XMLColors.Red));
                 return Vector2.zero;
             }
 
@@ -422,10 +423,9 @@ namespace KH
                 action));
         }
 
-        private static IEnumerator KHRunBatchedCoroutine(
-            int count,
-            int batchSize,
-            System.Action<int> action)
+        private static IEnumerator KHRunBatchedCoroutine(int count,
+                                                         int batchSize,
+                                                         System.Action<int> action)
         {
             for (int i = 0; i < count; i++)
             {
@@ -434,6 +434,16 @@ namespace KH
                 if ((i + 1) % batchSize == 0)
                     yield return null;
             }
+        }
+
+        #endregion
+        #region ROUND
+
+
+        public static float KHRoundToDecimalPlaces(this float value, int decimalPlaces = 2)
+        {
+            float multiplier = Mathf.Pow(10f, decimalPlaces);
+            return Mathf.Round(value * multiplier) / multiplier;
         }
 
         #endregion
