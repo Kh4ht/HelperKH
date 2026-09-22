@@ -6,76 +6,7 @@ namespace KH
 {
     public static class LoopExtensions
     {
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region For Each
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-
-        /// <summary>
-        /// Iterates through all elements in the list and executes the given action.
-        /// </summary>
-        /// <typeparam name="T">The element type of the list.</typeparam>
-        /// <param name="list">The list to iterate.</param>
-        /// <param name="action">The action to execute for each element.</param>
-        public static void KHForEach<T>(this IList<T> list, Action<T> action)
-        {
-            for (int i = 0; i < list.Count; i++)
-                action(list[i]);
-        }
-
-        /// <summary>
-        /// Iterates through all elements in the list and executes the given action,
-        /// providing both the element and its index.
-        /// </summary>
-        /// <typeparam name="T">The element type of the list.</typeparam>
-        /// <param name="list">The list to iterate.</param>
-        /// <param name="action">The action to execute for each element, with index.</param>
-        public static void KHForEach<T>(this IList<T> list, Action<T, int> action)
-        {
-            for (int i = 0; i < list.Count; i++)
-                action(list[i], i);
-        }
-
-        /// <summary>
-        /// Iterates through elements in the list and executes the given function.
-        /// The loop continues while the function returns <c>true</c>
-        /// and stops when it returns <c>false</c>.
-        /// </summary>
-        /// <typeparam name="T">The element type of the list.</typeparam>
-        /// <param name="list">The list to iterate.</param>
-        /// <param name="action">
-        /// A function executed for each element.  
-        /// Return <c>true</c> to continue, <c>false</c> to break the loop.
-        /// </param>
-        public static void KHForEach<T>(this IList<T> list, Func<T, bool> action)
-        {
-            for (int i = 0; i < list.Count; i++)
-                if (!action(list[i]))
-                    break;
-        }
-
-        /// <summary>
-        /// Iterates through elements in the list and executes the given function,
-        /// providing both the element and its index.  
-        /// The loop continues while the function returns <c>true</c>
-        /// and stops when it returns <c>false</c>.
-        /// </summary>
-        /// <typeparam name="T">The element type of the list.</typeparam>
-        /// <param name="list">The list to iterate.</param>
-        /// <param name="action">
-        /// A function executed for each element and index.  
-        /// Return <c>true</c> to continue, <c>false</c> to break the loop.
-        /// </param>
-        public static void KHForEach<T>(this IList<T> list, Func<T, int, bool> action)
-        {
-            for (int i = 0; i < list.Count; i++)
-                if (!action(list[i], i))
-                    break;
-        }
-
-        #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region Find
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region FIND
 
         /// <summary>
         /// Searches for the first element in the list that matches the specified predicate.
@@ -125,9 +56,7 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region Find All
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region FIND ALL
 
         /// <summary>
         /// Searches for all elements in the list that match the specified predicate and returns them as a new list.
@@ -225,9 +154,7 @@ namespace KH
         }
 
         #endregion
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
-        #region For Each Child
-        // █████████████████████████████████████████████████████████████████████████████████████████████████
+        #region FOR EACH CHILD
 
         public static void KHForEachChild(this Transform transform, Action<Transform> action)
         {

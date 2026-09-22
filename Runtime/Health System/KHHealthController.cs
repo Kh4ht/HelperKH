@@ -5,7 +5,8 @@ using KH;
 using UnityEngine;
 namespace KH
 {
-    public sealed class KHHealthController
+    [Serializable]
+    public class KHHealthController
     {
         #region FIELDS
 
@@ -19,15 +20,16 @@ namespace KH
         private readonly List<Action> _onMaxHealthChangedListeners = new();
 
         // Private Fields
-        private readonly MonoBehaviour owner;
-        private float lastDamageTime = -1f;
+        // private readonly MonoBehaviour owner;
+        // private readonly List<Coroutine> activeDots = new();
 
-        private readonly List<Coroutine> activeDots = new();
+        private float lastDamageTime = -1f;
 
         // Getters
         public bool HasFullHealth => _health >= _maxHealth;
 
         // Properties
+        [SerializeField]
         private bool _isDead;
         public bool IsDead
         {
@@ -46,6 +48,7 @@ namespace KH
             }
         }
 
+        [SerializeField]
         private float _health;
         public float Health
         {
@@ -75,6 +78,7 @@ namespace KH
             }
         }
 
+        [SerializeField]
         private int _maxHealth;
         public int MaxHealth
         {
@@ -94,9 +98,9 @@ namespace KH
         #endregion
         #region CONSTRUCTOR
 
-        public KHHealthController(MonoBehaviour owner, int initialMaxHealth, float initialHealth)
+        public KHHealthController(int initialMaxHealth, float initialHealth)
         {
-            this.owner = owner;
+            // this.owner = owner;
             _maxHealth = initialMaxHealth;
             _health = initialHealth;
         }
@@ -125,11 +129,11 @@ namespace KH
             // Make a copy to safely iterate
             var listenersCopy = list.ToArray();
 
-            listenersCopy.KHForEach(listener =>
+            foreach (var listener in listenersCopy)
             {
                 try { listener?.Invoke(); }
                 catch (Exception e) { Debug.LogError($"Listener threw exception: {e}"); }
-            });
+            }
         }
 
         // On Death Listener
@@ -162,7 +166,7 @@ namespace KH
 
         private void OnDeath()
         {
-            StopAllDots();
+            // StopAllDots();
 
             Notify(_onDeathListeners);
         }
@@ -199,64 +203,64 @@ namespace KH
             Notify(_onMaxHealthChangedListeners);
         }
 
-        private void StopAllDots()
-        {
-            foreach (Coroutine c in activeDots)
-            {
-                if (c != null)
-                    owner.StopCoroutine(c);
-            }
+        // private void StopAllDots()
+        // {
+        //     foreach (Coroutine c in activeDots)
+        //     {
+        //         if (c != null)
+        //             owner.StopCoroutine(c);
+        //     }
 
-            activeDots.Clear();
-        }
+        //     activeDots.Clear();
+        // }
 
-        private IEnumerator DamageTickCoroutine(MonoBehaviour runner,
-                                                float duration,
-                                                float interval,
-                                                Action onTick,
-                                                Action onComplete)
-        {
-            float elapsed = 0f;
+        // private IEnumerator DamageTickCoroutine(MonoBehaviour runner,
+        //                                         float duration,
+        //                                         float interval,
+        //                                         Action onTick,
+        //                                         Action onComplete)
+        // {
+        //     float elapsed = 0f;
 
-            while (elapsed < duration)
-            {
-                // 🔥 stop immediately if object is destroyed
-                if (!runner)
-                    yield break;
+        //     while (elapsed < duration)
+        //     {
+        //         // 🔥 stop immediately if object is destroyed
+        //         if (!runner)
+        //             yield break;
 
-                yield return new WaitForSeconds(interval);
+        //         yield return new WaitForSeconds(interval);
 
-                if (!runner)
-                    yield break;
+        //         if (!runner)
+        //             yield break;
 
-                onTick?.Invoke();
+        //         onTick?.Invoke();
 
-                elapsed += interval;
-            }
+        //         elapsed += interval;
+        //     }
 
-            onComplete?.Invoke();
-        }
+        //     onComplete?.Invoke();
+        // }
 
         #endregion
         #region PUBLIC
 
-        public void ApplyDamage(KHDamage khDamage)
-        {
-            RemoveHealth(khDamage.mainDamage);
+        // public void ApplyDamage(KHDamage khDamage)
+        // {
+        //     RemoveHealth(khDamage.mainDamage);
 
-            if (!owner || IsDead || !khDamage.HasOvertimeDamage)
-                return;
+        //     if (!owner || IsDead || !khDamage.HasOvertimeDamage)
+        //         return;
 
-            Coroutine c = null;
+        //     Coroutine c = null;
 
-            c = owner.StartCoroutine(DamageTickCoroutine(runner: owner,
-                                                         duration: khDamage.duration,
-                                                         interval: khDamage.duration / khDamage.ticks,
-                                                         onTick: () => RemoveHealth(khDamage.mainDamage * Mathf.Clamp01(khDamage.overTimeDamagePercent)),
-                                                         onComplete: () => activeDots.Remove(c)));
+        //     c = owner.StartCoroutine(DamageTickCoroutine(runner: owner,
+        //                                                  duration: khDamage.duration,
+        //                                                  interval: khDamage.duration / khDamage.ticks,
+        //                                                  onTick: () => RemoveHealth(khDamage.mainDamage * Mathf.Clamp01(khDamage.overTimeDamagePercent)),
+        //                                                  onComplete: () => activeDots.Remove(c)));
 
-            activeDots.Add(c);
-        }
+        //     activeDots.Add(c);
+        // }
 
         /// <summary>
         /// Returns how many seconds have passed since the entity last took damage.

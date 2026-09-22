@@ -9,45 +9,60 @@ namespace KH
     {
         #region FIELDS
 
-        public static KHSystemHub Instance { get; private set; }
+        public static KHSystemHub Ins { get; private set; }
 
-        private readonly List<IKHManagedUpdate> _updates = new();
-        private readonly List<IKHManagedFixedUpdate> _fixedUpdates = new();
+        private readonly List<IKHManagedUpdate> updates = new();
+        private readonly List<IKHManagedFixedUpdate> fixedUpdates = new();
+
+        // reusable buffers to avoid GC allocation every frame
+        private readonly List<IKHManagedUpdate> updatesBuffer = new();
+        private readonly List<IKHManagedFixedUpdate> fixedUpdatesBuffer = new();
 
         #endregion
         #region UNITY EVENTS
 
         private void Awake()
         {
-            Instance = this;
+            Ins = this;
         }
 
         private void Update()
         {
-            for (int i = _updates.Count - 1; i >= 0; i--)
-            {
-                if (_updates[i] == null)
-                {
-                    _updates.RemoveAt(i);
-                    continue;
-                }
+            updatesBuffer.Clear();
+            updatesBuffer.AddRange(updates);
 
-                _updates[i].KHManagedUpdate();
+            for (int i = 0; i < updatesBuffer.Count; i++)
+            {
+                var item = updatesBuffer[i];
+
+                // it may have been removed from the *real* list already,
+                // but as long as it's not null, it's still safe to call
+                if (item == null)
+                    continue;
+
+                item.KHUpdate();
             }
+
+            // clean up any nulls that accumulated in the real list
+            updates.RemoveAll(u => u == null);
         }
 
         private void FixedUpdate()
         {
-            for (int i = _fixedUpdates.Count - 1; i >= 0; i--)
-            {
-                if (_fixedUpdates[i] == null)
-                {
-                    _fixedUpdates.RemoveAt(i);
-                    continue;
-                }
+            fixedUpdatesBuffer.Clear();
+            fixedUpdatesBuffer.AddRange(fixedUpdates);
 
-                _fixedUpdates[i].KHManagedFixedUpdate();
+            for (int i = 0; i < fixedUpdatesBuffer.Count; i++)
+            {
+                var item = fixedUpdatesBuffer[i];
+
+                if (item == null)
+                    continue;
+
+                item.KHFixedUpdate();
             }
+
+            fixedUpdates.RemoveAll(f => f == null);
         }
 
 
@@ -56,20 +71,20 @@ namespace KH
 
         public void Add(object obj)
         {
-            if (obj is IKHManagedUpdate u && !_updates.Contains(u))
-                _updates.Add(u);
+            if (obj is IKHManagedUpdate u && !updates.Contains(u))
+                updates.Add(u);
 
-            if (obj is IKHManagedFixedUpdate f && !_fixedUpdates.Contains(f))
-                _fixedUpdates.Add(f);
+            if (obj is IKHManagedFixedUpdate f && !fixedUpdates.Contains(f))
+                fixedUpdates.Add(f);
         }
 
         public void Remove(object obj)
         {
             if (obj is IKHManagedUpdate u)
-                _updates.Remove(u);
+                updates.Remove(u);
 
             if (obj is IKHManagedFixedUpdate f)
-                _fixedUpdates.Remove(f);
+                fixedUpdates.Remove(f);
         }
 
         #endregion
@@ -79,12 +94,12 @@ namespace KH
 
     public interface IKHManagedUpdate
     {
-        void KHManagedUpdate();
+        void KHUpdate();
     }
 
     public interface IKHManagedFixedUpdate
     {
-        void KHManagedFixedUpdate();
+        void KHFixedUpdate();
     }
 
     #endregion
@@ -94,20 +109,20 @@ namespace KH
     {
         protected virtual void Start()
         {
-            if (KHSystemHub.Instance != null)
-                KHSystemHub.Instance.Add(this);
+            if (KHSystemHub.Ins != null)
+                KHSystemHub.Ins.Add(this);
         }
 
         protected virtual void OnEnable()
         {
-            if (KHSystemHub.Instance != null)
-                KHSystemHub.Instance.Add(this);
+            if (KHSystemHub.Ins != null)
+                KHSystemHub.Ins.Add(this);
         }
 
         protected virtual void OnDisable()
         {
-            if (KHSystemHub.Instance != null)
-                KHSystemHub.Instance.Remove(this);
+            if (KHSystemHub.Ins != null)
+                KHSystemHub.Ins.Remove(this);
         }
     }
 

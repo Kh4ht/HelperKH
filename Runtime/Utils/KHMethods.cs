@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KH
 {
-    static class KHUtils
+    public static class KHUtils
     {
         public enum XMLColors
         {
@@ -33,7 +33,7 @@ namespace KH
             };
         }
 
-        public static string SetDebugLogColor(this string message, XMLColors color)
+        public static string AddColorTag(this string message, XMLColors color)
         {
             string openTag = $"<b><color={Extract(color)}>";
             string closeTag = $"</b></color>";
@@ -46,7 +46,7 @@ namespace KH
             switch (color)
             {
                 case XMLColors.Red:
-                    return "#FF2626";
+                    return "#ffd9d9";
 
                 case XMLColors.Yellow:
                     return "yellow";

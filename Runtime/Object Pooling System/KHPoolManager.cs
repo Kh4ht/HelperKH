@@ -66,11 +66,14 @@ namespace KH
                                            T prefab,
                                            int initialSize = 0,
                                            bool expandable = true,
-                                           int maxSize = 0) where T : MonoBehaviour, IKHPoolable
+                                           int maxSize = 0,
+                                           bool showLogMessage = true) where T : MonoBehaviour, IKHPoolable
         {
             if (_registry.ContainsKey(key))
             {
-                Debug.LogWarning($"[PoolManager] Pool '{key}' is already registered. Returning existing pool.");
+                if (showLogMessage)
+                    Debug.Log($"{nameof(KHPoolManager)} Pool '{key}' is already registered. Returning existing pool.".AddColorTag(KHUtils.XMLColors.White));
+
                 return GetPool<T>(key);
             }
 

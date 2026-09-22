@@ -36,10 +36,11 @@ namespace KH
         /// <param name="parent">Optional parent transform for pooled objects.</param>
         /// <param name="expandable">If true, creates new instances when empty; otherwise returns null.</param>
         /// <param name="maxSize">Hard cap on total instances (0 = no cap).</param>
-        public KHObjectPool(T prefab, int initialSize = 10,
-                          Transform parent = null,
-                          bool expandable = true,
-                          int maxSize = 0)
+        public KHObjectPool(T prefab,
+                            int initialSize = 10,
+                            Transform parent = null,
+                            bool expandable = true,
+                            int maxSize = 0)
         {
             _prefab = prefab;
             _parent = parent;

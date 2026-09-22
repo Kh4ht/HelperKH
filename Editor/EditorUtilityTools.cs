@@ -30,6 +30,7 @@ public static class EditorUtilityTools
 
     /// <summary>
     /// Adjusts the list so that it contains the specified number of elements.
+    /// <para>WARNING: Use Carefully, Don't Use It For Lists That Are Important Data Storage Inside OnValidate().</para>
     /// </summary>
     /// <typeparam name="T">The type of elements in the list.</typeparam>
     /// <param name="list">The list whose size should be adjusted.</param>

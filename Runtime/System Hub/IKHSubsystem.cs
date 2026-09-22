@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using KH;
 using UnityEngine;
 
 public interface IKHSubsystem
@@ -18,41 +17,73 @@ public static class KHHelper
 {
     public static void OnEnableAll(this List<IKHSubsystem> systems)
     {
-        systems.KHForEach(p => p.IOnEnable());
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IOnEnable();
     }
 
     public static void OnDisableAll(this List<IKHSubsystem> systems)
     {
-        systems.KHForEach(p => p.IOnDisable());
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IOnDisable();
     }
 
     public static void AwakeAll(this List<IKHSubsystem> systems)
     {
-        systems.KHForEach(p => p.IAwake());
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IAwake();
     }
 
     public static void StartAll(this List<IKHSubsystem> systems)
     {
-        systems.KHForEach(p => p.IStart());
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IStart();
     }
 
     public static void UpdateAll(this List<IKHSubsystem> systems)
     {
-        systems.KHForEach(p => p.IUpdate());
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IUpdate();
     }
 
     public static void FixedUpdateAll(this List<IKHSubsystem> systems)
     {
-        systems.KHForEach(p => p.IFixedUpdate());
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IFixedUpdate();
     }
 
     public static void OnTriggerEnter2DAll(this List<IKHSubsystem> systems, Collider2D collision)
     {
-        systems.KHForEach(p => p.IOnTriggerEnter2D(collision));
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IOnTriggerEnter2D(collision);
     }
 
     public static void ResetAll(this List<IKHSubsystem> systems)
     {
-        systems.KHForEach(p => p.IReset());
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IReset();
     }
 }
