@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KH
 {
-    [AddComponentMenu("KH/System Hub")]
+    [AddComponentMenu("KH/Systems/" + nameof(KHSystemHub))]
     [System.Serializable]
     public class KHSystemHub : MonoBehaviour
     {

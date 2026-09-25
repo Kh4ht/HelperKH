@@ -8,7 +8,7 @@ namespace KH
     /// Access via PoolManager.Instance anywhere in your project.
     /// </summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("KH/KHPoolManager")]
+    [AddComponentMenu("KH/Systems/" + nameof(KHPoolManager))]
     public class KHPoolManager : MonoBehaviour
     {
         #region FIELDS

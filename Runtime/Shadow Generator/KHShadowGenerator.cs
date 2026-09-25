@@ -9,7 +9,7 @@ using UnityEditor;
 /// The shadow child is persisted in the scene/prefab (serialized reference), so it is never duplicated
 /// on domain reload / scene load, and it works identically in builds.
 /// </summary>
-[AddComponentMenu("KH/KHShadowGenerator"), DisallowMultipleComponent, RequireComponent(typeof(SpriteRenderer))]
+[AddComponentMenu("KH/Systems/" + nameof(KHShadowGenerator)), DisallowMultipleComponent, RequireComponent(typeof(SpriteRenderer))]
 public class KHShadowGenerator : KHManagedBehaviour, IKHManagedUpdate
 {
     private const string ShadowObjectName = "ShadowObject";

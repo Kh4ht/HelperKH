@@ -3,21 +3,17 @@ using UnityEngine.UI;
 
 [RequireComponent(typeof(Image), typeof(RectTransform))]
 [DisallowMultipleComponent]
-[AddComponentMenu("HelperKH/UI/" + nameof(MatchSpriteSize))]
+[AddComponentMenu("KH/UI/" + nameof(MatchSpriteSize))]
 public class MatchSpriteSize : MonoBehaviour
 {
-    #region FIELDS █████████████████████████████████████████████████████████████████████████████████████████████
+    #region FIELDS
 
+    // COMPONENTS
     [HideInInspector] public Image img;
     [HideInInspector] public RectTransform rt;
 
-    #region SERIALIZABLE FIELDS █ █ █
-
-
-
     #endregion
-    #endregion
-    #region UNITY EVENT FUNCTIONS ██████████████████████████████████████████████████████████████████████████████
+    #region UNITY EVENTS
 
     private void Reset()
     {
@@ -30,12 +26,7 @@ public class MatchSpriteSize : MonoBehaviour
     }
 
     #endregion
-    #region PRIVATE METHODS ████████████████████████████████████████████████████████████████████████████████████
-
-
-
-    #endregion
-    #region PUBLIC METHODS █████████████████████████████████████████████████████████████████████████████████████
+    #region PUBLIC
 
     public void CacheReferences()
     {

@@ -4,7 +4,7 @@ using UnityEngine;
 using KH;
 using UnityEngine.UI;
 
-[AddComponentMenu("KH/KHUI Controller"), DisallowMultipleComponent, RequireComponent(typeof(CanvasGroup))]
+[AddComponentMenu("KH/UI/" + nameof(KHUIController)), DisallowMultipleComponent, RequireComponent(typeof(CanvasGroup))]
 public class KHUIController : KHManagedBehaviour
 {
     #region Fields
