@@ -1,5 +1,5 @@
 using UnityEngine;
-using KH;
+
 namespace KH
 {
     [System.Serializable]
@@ -26,7 +26,7 @@ namespace KH
         {
             // Prevents the timer from overflowing and becoming negative. The 100 is just a buffer to prevent it from getting too close to double.MaxValue, which could cause issues with the DidExceed() method.
             if (Seconds < TIMER_MAX_VALUE)
-                Seconds += UnityEngine.Time.deltaTime;
+                Seconds += Time.deltaTime;
         }
 
         #endregion

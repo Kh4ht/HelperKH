@@ -1,4 +1,3 @@
-using System.Collections;
 using PrimeTween;
 using UnityEngine;
 using KH;
@@ -27,6 +26,14 @@ public class KHUIController : KHManagedBehaviour
     // Tween
     private Tween activeTween;
 
+    // Logical visibility state. This is updated the INSTANT Show/Hide is
+    // requested, unlike gameObject.activeInHierarchy which only flips to
+    // false once the hide tween's OnComplete fires (after UI_HIDE_SPEED
+    // seconds). Using the Unity active flag as the toggle guard caused
+    // rapid clicks landing inside that animation window to be misread,
+    // since the object still reported "active" while it was mid-close.
+    private bool isShown;
+
     #endregion
     #region UNITY EVENTS
 
@@ -44,6 +51,8 @@ public class KHUIController : KHManagedBehaviour
         originalPos = transform.localPosition;
 
         parentCanvasRect = GetComponentInParent<Canvas>().GetComponent<RectTransform>();
+
+        isShown = gameObject.activeInHierarchy;
     }
 
     #endregion
@@ -92,58 +101,62 @@ public class KHUIController : KHManagedBehaviour
 
     public void KH_PopShow()
     {
-        if (!gameObject.activeInHierarchy)
+        if (isShown)
+            return;
+        isShown = true;
+
+        gameObject.SetActive(true);
+        canvasGroup.interactable = false;
+
+        transform.localScale = Vector3.zero;
+
+        if (activeTween.isAlive)
         {
-            gameObject.SetActive(true);
-            canvasGroup.interactable = false;
-
-            transform.localScale = Vector3.zero;
-
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.Scale(
-                transform,
-                endValue: originalScale,
-                duration: UI_SHOW_SPEED,
-                ease: Ease.OutBack,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults(true);
-            });
+            activeTween.Stop();
         }
+        activeTween = Tween.Scale(
+            transform,
+            endValue: originalScale,
+            duration: UI_SHOW_SPEED,
+            ease: Ease.OutBack,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults(true);
+        });
     }
 
     public void KH_PopHide()
     {
-        if (gameObject.activeInHierarchy)
-        {
-            canvasGroup.interactable = false;
+        if (!isShown)
+            return;
+        isShown = false;
 
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.Scale(
-                transform,
-                endValue: Vector3.zero,
-                duration: UI_HIDE_SPEED,
-                ease: Ease.InBack,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults();
-                gameObject.SetActive(false);
-            });
+        canvasGroup.interactable = false;
+
+        if (activeTween.isAlive)
+        {
+            activeTween.Stop();
         }
+        activeTween = Tween.Scale(
+            transform,
+            endValue: Vector3.zero,
+            duration: UI_HIDE_SPEED,
+            ease: Ease.InBack,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults();
+            gameObject.SetActive(false);
+        });
     }
 
     public void KH_PopToggle()
     {
-        KH_PopHide();
-        KH_PopShow();
+        if (isShown)
+            KH_PopHide();
+        else
+            KH_PopShow();
     }
 
     #endregion
@@ -151,57 +164,61 @@ public class KHUIController : KHManagedBehaviour
 
     public void KH_LeftShow()
     {
-        if (!gameObject.activeInHierarchy)
+        if (isShown)
+            return;
+        isShown = true;
+
+        gameObject.SetActive(true);
+
+        transform.localPosition = originalPos + Vector3.left * parentCanvasRect.rect.width;
+
+        if (activeTween.isAlive)
         {
-            gameObject.SetActive(true);
-
-            transform.localPosition = originalPos + Vector3.left * parentCanvasRect.rect.width;
-
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.LocalPosition(
-                transform,
-                endValue: originalPos,
-                duration: UI_SHOW_SPEED,
-                ease: Ease.OutCubic,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults(true);
-            });
+            activeTween.Stop();
         }
+        activeTween = Tween.LocalPosition(
+            transform,
+            endValue: originalPos,
+            duration: UI_SHOW_SPEED,
+            ease: Ease.OutCubic,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults(true);
+        });
     }
 
     public void KH_LeftHide()
     {
-        if (gameObject.activeInHierarchy)
-        {
-            canvasGroup.interactable = false;
+        if (!isShown)
+            return;
+        isShown = false;
 
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.LocalPosition(
-                transform,
-                endValue: originalPos + Vector3.left * parentCanvasRect.rect.width,
-                duration: UI_HIDE_SPEED,
-                ease: Ease.InCubic,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults();
-                gameObject.SetActive(false);
-            });
+        canvasGroup.interactable = false;
+
+        if (activeTween.isAlive)
+        {
+            activeTween.Stop();
         }
+        activeTween = Tween.LocalPosition(
+            transform,
+            endValue: originalPos + Vector3.left * parentCanvasRect.rect.width,
+            duration: UI_HIDE_SPEED,
+            ease: Ease.InCubic,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults();
+            gameObject.SetActive(false);
+        });
     }
 
     public void KH_LeftToggle()
     {
-        KH_LeftHide();
-        KH_LeftShow();
+        if (isShown)
+            KH_LeftHide();
+        else
+            KH_LeftShow();
     }
 
     #endregion
@@ -209,60 +226,62 @@ public class KHUIController : KHManagedBehaviour
 
     public void KH_RightShow()
     {
-        if (!gameObject.activeInHierarchy)
+        if (isShown)
+            return;
+        isShown = true;
+
+        gameObject.SetActive(true);
+        canvasGroup.interactable = true;
+
+        transform.localPosition = originalPos + Vector3.right * parentCanvasRect.rect.width;
+
+        if (activeTween.isAlive)
         {
-            gameObject.SetActive(true);
-
-            canvasGroup.interactable = true;
-            gameObject.SetActive(true);
-
-            transform.localPosition = originalPos + Vector3.right * parentCanvasRect.rect.width;
-
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.LocalPosition(
-                transform,
-                endValue: originalPos,
-                duration: UI_SHOW_SPEED,
-                ease: Ease.OutCubic,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults(true);
-            });
+            activeTween.Stop();
         }
+        activeTween = Tween.LocalPosition(
+            transform,
+            endValue: originalPos,
+            duration: UI_SHOW_SPEED,
+            ease: Ease.OutCubic,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults(true);
+        });
     }
 
     public void KH_RightHide()
     {
-        if (gameObject.activeInHierarchy)
-        {
-            canvasGroup.interactable = false;
+        if (!isShown)
+            return;
+        isShown = false;
 
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.LocalPosition(
-                transform,
-                endValue: originalPos + Vector3.right * parentCanvasRect.rect.width,
-                duration: UI_HIDE_SPEED,
-                ease: Ease.InCubic,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults();
-                gameObject.SetActive(false);
-            });
+        canvasGroup.interactable = false;
+
+        if (activeTween.isAlive)
+        {
+            activeTween.Stop();
         }
+        activeTween = Tween.LocalPosition(
+            transform,
+            endValue: originalPos + Vector3.right * parentCanvasRect.rect.width,
+            duration: UI_HIDE_SPEED,
+            ease: Ease.InCubic,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults();
+            gameObject.SetActive(false);
+        });
     }
 
     public void KH_RightToggle()
     {
-        KH_RightHide();
-        KH_RightShow();
+        if (isShown)
+            KH_RightHide();
+        else
+            KH_RightShow();
     }
 
     #endregion
@@ -270,62 +289,62 @@ public class KHUIController : KHManagedBehaviour
 
     public void KH_UpShow()
     {
-        if (!gameObject.activeInHierarchy)
+        if (isShown)
+            return;
+        isShown = true;
+
+        gameObject.SetActive(true);
+        canvasGroup.interactable = true;
+
+        transform.localPosition = originalPos + Vector3.up * parentCanvasRect.rect.width;
+
+        if (activeTween.isAlive)
         {
-            gameObject.SetActive(true);
-
-            canvasGroup.interactable = true;
-            gameObject.SetActive(true);
-
-            transform.localPosition = originalPos + Vector3.up * parentCanvasRect.rect.width;
-
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.LocalPosition(
-                transform,
-                endValue: originalPos,
-                duration: UI_SHOW_SPEED,
-                ease: Ease.OutCubic,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults(true);
-            });
+            activeTween.Stop();
         }
+        activeTween = Tween.LocalPosition(
+            transform,
+            endValue: originalPos,
+            duration: UI_SHOW_SPEED,
+            ease: Ease.OutCubic,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults(true);
+        });
     }
 
     public void KH_UpHide()
     {
-        if (gameObject.activeInHierarchy)
-        {
-            canvasGroup.interactable = false;
+        if (!isShown)
+            return;
+        isShown = false;
 
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            if (parentCanvasRect == null)
-                Debug.Log("parentCanvasRect == null ");
-            activeTween = Tween.LocalPosition(
-                transform,
-                endValue: originalPos + Vector3.up * parentCanvasRect.rect.width,
-                duration: UI_HIDE_SPEED,
-                ease: Ease.InCubic,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults();
-                gameObject.SetActive(false);
-            });
+        canvasGroup.interactable = false;
+
+        if (activeTween.isAlive)
+        {
+            activeTween.Stop();
         }
+        activeTween = Tween.LocalPosition(
+            transform,
+            endValue: originalPos + Vector3.up * parentCanvasRect.rect.width,
+            duration: UI_HIDE_SPEED,
+            ease: Ease.InCubic,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults();
+            gameObject.SetActive(false);
+        });
     }
 
     public void KH_UpToggle()
     {
-        KH_UpHide();
-        KH_UpShow();
+        if (isShown)
+            KH_UpHide();
+        else
+            KH_UpShow();
     }
 
     #endregion
@@ -333,60 +352,62 @@ public class KHUIController : KHManagedBehaviour
 
     public void KH_DownShow()
     {
-        if (!gameObject.activeInHierarchy)
+        if (isShown)
+            return;
+        isShown = true;
+
+        gameObject.SetActive(true);
+        canvasGroup.interactable = true;
+
+        transform.localPosition = originalPos + Vector3.down * parentCanvasRect.rect.width;
+
+        if (activeTween.isAlive)
         {
-            gameObject.SetActive(true);
-
-            canvasGroup.interactable = true;
-            gameObject.SetActive(true);
-
-            transform.localPosition = originalPos + Vector3.down * parentCanvasRect.rect.width;
-
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.LocalPosition(
-                transform,
-                endValue: originalPos,
-                duration: UI_SHOW_SPEED,
-                ease: Ease.OutCubic,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults(true);
-            });
+            activeTween.Stop();
         }
+        activeTween = Tween.LocalPosition(
+            transform,
+            endValue: originalPos,
+            duration: UI_SHOW_SPEED,
+            ease: Ease.OutCubic,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults(true);
+        });
     }
 
     public void KH_DownHide()
     {
-        if (gameObject.activeInHierarchy)
-        {
-            canvasGroup.interactable = false;
+        if (!isShown)
+            return;
+        isShown = false;
 
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.LocalPosition(
-                transform,
-                endValue: originalPos + Vector3.down * parentCanvasRect.rect.width,
-                duration: UI_HIDE_SPEED,
-                ease: Ease.InCubic,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults();
-                gameObject.SetActive(false);
-            });
+        canvasGroup.interactable = false;
+
+        if (activeTween.isAlive)
+        {
+            activeTween.Stop();
         }
+        activeTween = Tween.LocalPosition(
+            transform,
+            endValue: originalPos + Vector3.down * parentCanvasRect.rect.width,
+            duration: UI_HIDE_SPEED,
+            ease: Ease.InCubic,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults();
+            gameObject.SetActive(false);
+        });
     }
 
     public void KH_DownToggle()
     {
-        KH_DownHide();
-        KH_DownShow();
+        if (isShown)
+            KH_DownHide();
+        else
+            KH_DownShow();
     }
 
     #endregion
@@ -394,55 +415,59 @@ public class KHUIController : KHManagedBehaviour
 
     public void KH_FadeShow()
     {
-        if (!gameObject.activeInHierarchy)
+        if (isShown)
+            return;
+        isShown = true;
+
+        gameObject.SetActive(true);
+
+        canvasGroup.alpha = 0;
+
+        if (activeTween.isAlive)
         {
-            gameObject.SetActive(true);
-
-            canvasGroup.alpha = 0;
-
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.Alpha(
-                canvasGroup,
-                endValue: 1f,
-                duration: UI_SHOW_SPEED,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults(true);
-            });
+            activeTween.Stop();
         }
+        activeTween = Tween.Alpha(
+            canvasGroup,
+            endValue: 1f,
+            duration: UI_SHOW_SPEED,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults(true);
+        });
     }
 
     public void KH_FadeHide()
     {
-        if (gameObject.activeInHierarchy)
-        {
-            canvasGroup.interactable = false;
+        if (!isShown)
+            return;
+        isShown = false;
 
-            if (activeTween.isAlive)
-            {
-                activeTween.Stop();
-            }
-            activeTween = Tween.Alpha(
-                canvasGroup,
-                endValue: 0f,
-                duration: UI_HIDE_SPEED,
-                useUnscaledTime: true
-            ).OnComplete(() =>
-            {
-                RestoreDefaults();
-                gameObject.SetActive(false);
-            });
+        canvasGroup.interactable = false;
+
+        if (activeTween.isAlive)
+        {
+            activeTween.Stop();
         }
+        activeTween = Tween.Alpha(
+            canvasGroup,
+            endValue: 0f,
+            duration: UI_HIDE_SPEED,
+            useUnscaledTime: true
+        ).OnComplete(() =>
+        {
+            RestoreDefaults();
+            gameObject.SetActive(false);
+        });
     }
 
     public void KH_FadeToggle()
     {
-        KH_FadeHide();
-        KH_FadeShow();
+        if (isShown)
+            KH_FadeHide();
+        else
+            KH_FadeShow();
     }
 
     #endregion

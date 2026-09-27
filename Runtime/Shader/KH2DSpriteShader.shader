@@ -19,87 +19,72 @@ Shader "KH/KH2D Sprite Shader"
     Properties
     {
         [MainTexture] _MainTex ("Sprite Texture", 2D) = "white" {}
-        [MainColor]   _Color ("Tint Color", Color) = (1,1,1,1)
+
+        // All effect values below are driven entirely by KH2DSpriteEffects.cs (via
+        // MaterialPropertyBlock) and its custom Inspector - hidden here so the material
+        // Inspector doesn't show controls that would only affect this one shared asset
+        // instead of a single sprite. The properties themselves are untouched: they still
+        // exist, still compile, and are still fully settable per-instance from script.
+        [HideInInspector] [MainColor] _Color ("Tint Color", Color) = (1,1,1,1)
 
         // Required for SpriteRenderer.color / sprite atlas support - do not remove.
-        [PerRendererData] _RendererColor ("RendererColor (internal)", Color) = (1,1,1,1)
-        [PerRendererData] _Flip ("Flip (internal)", Vector) = (1,1,1,1)
-        [PerRendererData] _AlphaTex ("External Alpha (internal)", 2D) = "white" {}
-        [PerRendererData] _EnableExternalAlpha ("EnableExternalAlpha (internal)", Float) = 0
+        [HideInInspector][PerRendererData] _RendererColor ("RendererColor (internal)", Color) = (1,1,1,1)
+        [HideInInspector][PerRendererData] _Flip ("Flip (internal)", Vector) = (1,1,1,1)
+        [HideInInspector][PerRendererData] _AlphaTex ("External Alpha (internal)", 2D) = "white" {}
+        [HideInInspector][PerRendererData] _EnableExternalAlpha ("EnableExternalAlpha (internal)", Float) = 0
 
-        [Space]
-        [Header(ALPHA CUTOFF)]
-        _AlphaCutoff ("Cutoff Threshold", Range(0,1)) = 0
+        [HideInInspector] _AlphaCutoff ("Cutoff Threshold", Range(0,1)) = 0
 
-        [Space]
-        [Header(OUTER OUTLINE)]
-        _OutlineColor ("Outline Color", Color) = (1,1,1,1)
-        _OutlineWidth ("Outline Width (px)", Range(0,10)) = 0
-        [Toggle] _OutlineOnly ("Show Outline Only", Float) = 0
+        [HideInInspector] _OutlineColor ("Outline Color", Color) = (1,1,1,1)
+        [HideInInspector] _OutlineWidth ("Outline Width (px)", Range(0,10)) = 0
+        [HideInInspector][Toggle] _OutlineOnly ("Show Outline Only", Float) = 0
 
-        [Space]
-        [Header(INNER OUTLINE GLOW)]
-        _InnerOutlineColor ("Inner Outline Color", Color) = (1,1,1,1)
-        _InnerOutlineWidth ("Inner Outline Width (px)", Range(0,10)) = 0
+        [HideInInspector] _InnerOutlineColor ("Inner Outline Color", Color) = (1,1,1,1)
+        [HideInInspector] _InnerOutlineWidth ("Inner Outline Width (px)", Range(0,10)) = 0
 
         [Space]
         [Header(DISSOLVE)]
+        // Only the noise texture stays visible - it's the one thing the script doesn't
+        // (and can't) set for you, since MaterialPropertyBlock textures aren't managed by
+        // KH2DSpriteEffects.cs. Assign it here once per material.
         _DissolveNoiseTex ("Dissolve Noise Texture", 2D) = "white" {}
-        _DissolveAmount ("Dissolve Amount", Range(0,1)) = 0
-        _DissolveEdgeWidth ("Edge Width", Range(0,0.5)) = 0.05
-        _DissolveEdgeColor ("Edge Color", Color) = (1,0.5,0,1)
-        [Toggle] _DissolveInvert ("Invert Direction", Float) = 0
+        [HideInInspector] _DissolveAmount ("Dissolve Amount", Range(0,1)) = 0
+        [HideInInspector] _DissolveEdgeWidth ("Edge Width", Range(0,0.5)) = 0.05
+        [HideInInspector] _DissolveEdgeColor ("Edge Color", Color) = (1,0.5,0,1)
+        [HideInInspector][Toggle] _DissolveInvert ("Invert Direction", Float) = 0
 
-        [Space]
-        [Header(FLASH HIT FEEDBACK)]
-        _FlashColor ("Flash Color", Color) = (1,1,1,1)
-        _FlashAmount ("Flash Amount", Range(0,1)) = 0
+        [HideInInspector] _FlashColor ("Flash Color", Color) = (1,1,1,1)
+        [HideInInspector] _FlashAmount ("Flash Amount", Range(0,1)) = 0
 
-        [Space]
-        [Header(FILL SILHOUETTE RECOLOR)]
-        _FillColor ("Fill Color", Color) = (1,1,1,1)
-        _FillAmount ("Fill Amount", Range(0,1)) = 0
+        [HideInInspector] _FillColor ("Fill Color", Color) = (1,1,1,1)
+        [HideInInspector] _FillAmount ("Fill Amount", Range(0,1)) = 0
 
-        [Space]
-        [Header(HUE SATURATION BRIGHTNESS CONTRAST)]
-        _Hue ("Hue Shift", Range(-180,180)) = 0
-        _Saturation ("Saturation", Range(0,2)) = 1
-        _Brightness ("Brightness", Range(-1,1)) = 0
-        _Contrast ("Contrast", Range(0,2)) = 1
+        [HideInInspector] _Hue ("Hue Shift", Range(-180,180)) = 0
+        [HideInInspector] _Saturation ("Saturation", Range(0,2)) = 1
+        [HideInInspector] _Brightness ("Brightness", Range(-1,1)) = 0
+        [HideInInspector] _Contrast ("Contrast", Range(0,2)) = 1
 
-        [Space]
-        [Header(GRAYSCALE)]
-        _GrayscaleAmount ("Grayscale Amount", Range(0,1)) = 0
+        [HideInInspector] _GrayscaleAmount ("Grayscale Amount", Range(0,1)) = 0
 
-        [Space]
-        [Header(EDGE GLOW RIM)]
-        _RimColor ("Rim Color", Color) = (1,1,1,1)
-        _RimWidth ("Rim Width (px)", Range(0,20)) = 4
-        _RimIntensity ("Rim Intensity", Range(0,5)) = 0
+        [HideInInspector] _RimColor ("Rim Color", Color) = (1,1,1,1)
+        [HideInInspector] _RimWidth ("Rim Width (px)", Range(0,20)) = 4
+        [HideInInspector] _RimIntensity ("Rim Intensity", Range(0,5)) = 0
 
-        [Space]
-        [Header(SHINE SWEEP)]
-        _ShineColor ("Shine Color", Color) = (1,1,1,1)
-        _ShineWidth ("Shine Band Width", Range(0.01,1)) = 0.15
-        _ShineAngle ("Shine Angle (deg)", Range(0,180)) = 30
-        _ShineSpeed ("Shine Speed", Range(0,5)) = 1
-        _ShineIntensity ("Shine Intensity", Range(0,5)) = 0
-        [Toggle] _ShineLoop ("Loop Continuously", Float) = 1
+        [HideInInspector] _ShineColor ("Shine Color", Color) = (1,1,1,1)
+        [HideInInspector] _ShineWidth ("Shine Band Width", Range(0.01,1)) = 0.15
+        [HideInInspector] _ShineAngle ("Shine Angle (deg)", Range(0,180)) = 30
+        [HideInInspector] _ShineSpeed ("Shine Speed", Range(0,5)) = 1
+        [HideInInspector] _ShineIntensity ("Shine Intensity", Range(0,5)) = 0
+        [HideInInspector][Toggle] _ShineLoop ("Loop Continuously", Float) = 1
 
-        [Space]
-        [Header(CHROMATIC ABERRATION)]
-        _ChromaticAmount ("Amount (px)", Range(0,10)) = 0
+        [HideInInspector] _ChromaticAmount ("Amount (px)", Range(0,10)) = 0
 
-        [Space]
-        [Header(PIXELATION)]
-        _PixelSize ("Pixel Block Size (px)", Range(1,64)) = 1
+        [HideInInspector] _PixelSize ("Pixel Block Size (px)", Range(1,64)) = 1
 
-        [Space]
-        [Header(WAVE DISTORTION)]
-        _WaveAmplitude ("Amplitude (UV)", Range(0,0.1)) = 0
-        _WaveFrequency ("Frequency", Range(0,50)) = 10
-        _WaveSpeed ("Speed", Range(0,10)) = 2
-        [Toggle] _WaveVertical ("Vertical Waves", Float) = 0
+        [HideInInspector] _WaveAmplitude ("Amplitude (UV)", Range(0,0.1)) = 0
+        [HideInInspector] _WaveFrequency ("Frequency", Range(0,50)) = 10
+        [HideInInspector] _WaveSpeed ("Speed", Range(0,10)) = 2
+        [HideInInspector][Toggle] _WaveVertical ("Vertical Waves", Float) = 0
 
         [Space]
         [Header(RENDER SETTINGS)]
@@ -417,6 +402,14 @@ Shader "KH/KH2D Sprite Shader"
         }
     }
 
-    CustomEditor "MasterSpriteShaderGUI"
+    // No CustomEditor here on purpose: Unity's own default material Inspector is the one
+    // that actually honors [HideInInspector] on every property below. A custom ShaderGUI
+    // class (e.g. "MasterSpriteShaderGUI") draws whatever properties its own code loops
+    // over, and only skips HideInInspector ones if its author explicitly checks for that
+    // flag - so pointing CustomEditor at one is exactly what was making every value show
+    // up again (sometimes greyed out) despite the attribute. If you have your own
+    // ShaderGUI script and want its foldout/grouping look back, add a check like
+    // `if ((prop.flags & MaterialProperty.PropFlags.HideInInspector) != 0) continue;`
+    // wherever it iterates properties, then restore the CustomEditor line below it.
     Fallback "Sprites/Default"
 }
