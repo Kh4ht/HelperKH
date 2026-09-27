@@ -51,6 +51,11 @@ public class KHUIController : KHManagedBehaviour
         originalPos = transform.localPosition;
 
         parentCanvasRect = GetComponentInParent<Canvas>().GetComponent<RectTransform>();
+    }
+
+    protected override void Start()
+    {
+        base.Start();
 
         isShown = gameObject.activeInHierarchy;
     }
@@ -76,6 +81,15 @@ public class KHUIController : KHManagedBehaviour
 
     #endregion
     #region PUBLIC
+
+    protected bool GetIsShown() => isShown;
+    protected void SetIsShown(bool newValue)
+    {
+        if (newValue == isShown)
+            return;
+
+        isShown = newValue;
+    }
 
     public void KH_ToggleSprite(Sprite sprite)
     {

@@ -553,34 +553,6 @@ namespace KH
         }
 
         #endregion
-        #region SORTING ORDER
-
-
-        /// <summary>
-        /// Updates the sprite's sorting order based on its Y position in the world.
-        /// This creates a pseudo-depth effect where objects lower on the screen
-        /// appear in front of those higher up.
-        /// 
-        /// The Y position is multiplied by 20 and cast to an integer to reduce
-        /// the frequency of sorting order changes (helps performance by avoiding
-        /// unnecessary updates for tiny movements).
-        /// 
-        /// If the calculated order differs from the last stored Y position,
-        /// the sorting order is updated and the last position is saved.
-        /// </summary>
-        public static void KHUpdateSortingOrderBasedOnYPos(this SpriteRenderer spriteRenderer, float Ypos)
-        {
-            if (spriteRenderer == null)
-            {
-                Debug.LogError($"{nameof(spriteRenderer)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
-                return;
-            }
-
-            if (spriteRenderer.sortingOrder != -(int)(Ypos * 20))
-                spriteRenderer.sortingOrder = -(int)(Ypos * 20);
-        }
-
-        #endregion
         #region RUN BATCHED
 
 
