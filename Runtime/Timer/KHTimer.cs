@@ -1,3 +1,5 @@
+using KH.Enums;
+using KH.Utils;
 using UnityEngine;
 
 namespace KH
@@ -37,12 +39,12 @@ namespace KH
         {
             if (duration < 0)
             {
-                Debug.LogWarning($"{nameof(duration)} is negative. It will return FALSE.".AddColorTag(KHUtils.XMLColors.Yellow));
+                Debug.LogWarning($"{nameof(duration)} is negative. It will return FALSE.".AddColorTag(XMLColors.Yellow));
                 return false;
             }
             else if (duration > TIMER_MAX_VALUE)
             {
-                Debug.LogWarning($"{nameof(duration)} is greater {nameof(double.MaxValue)}. It will return FALSE.".AddColorTag(KHUtils.XMLColors.Yellow));
+                Debug.LogWarning($"{nameof(duration)} is greater {nameof(double.MaxValue)}. It will return FALSE.".AddColorTag(XMLColors.Yellow));
                 return false;
             }
 
@@ -61,13 +63,13 @@ namespace KH
             if (timerHeadstart < 0)
             {
                 Seconds = 0;
-                Debug.LogWarning($"{nameof(timerHeadstart)} is negative. It has been set to 0.".AddColorTag(KHUtils.XMLColors.Yellow));
+                Debug.LogWarning($"{nameof(timerHeadstart)} is negative. It has been set to 0.".AddColorTag(XMLColors.Yellow));
                 return;
             }
             if (timerHeadstart > TIMER_MAX_VALUE)
             {
                 Seconds = 0;
-                Debug.LogWarning($"{nameof(timerHeadstart)} exceeded {nameof(double.MaxValue)}. It has been set to 0.".AddColorTag(KHUtils.XMLColors.Yellow));
+                Debug.LogWarning($"{nameof(timerHeadstart)} exceeded {nameof(double.MaxValue)}. It has been set to 0.".AddColorTag(XMLColors.Yellow));
                 return;
             }
 

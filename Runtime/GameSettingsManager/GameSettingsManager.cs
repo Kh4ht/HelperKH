@@ -1,13 +1,23 @@
 // GameSettingsManager.cs
 // A persistent, singleton settings manager covering the graphics/performance options a
 // shipped game's Settings menu typically needs: FPS cap, VSync, quality level, resolution
-// + fullscreen mode, anti-aliasing, and automatic throttling while the game is in the
-// background. Every setter here both applies the change immediately AND saves it to
-// PlayerPrefs, and everything is re-applied automatically on startup.
+// + fullscreen mode, anti-aliasing, post-processing on/off, and automatic throttling while
+// the game is in the background. Every setter here both applies the change immediately AND
+// saves it to PlayerPrefs, and everything is re-applied automatically on startup.
 //
 // Attach this to one GameObject in your first/boot scene. It marks itself
 // DontDestroyOnLoad and is a singleton, so any other script (including your Settings UI)
 // can just call GameSettingsManager.Instance.SetCustomFPS(120) etc. from anywhere.
+//
+// POST-PROCESSING NOTES
+// ---------------------------------------------------------------------------------------
+//   - Built-in pipeline + Post Processing Stack v2: works automatically (the package
+//     defines UNITY_POST_PROCESSING_STACK_V2 itself).
+//   - URP: add USING_URP to Project Settings > Player > Scripting Define Symbols.
+//   - HDRP / custom pipelines: not handled directly - listen to PostProcessingChanged and
+//     toggle your Volumes (weight/enabled) yourself.
+//   - If no symbol is defined, the setting still saves and fires the event, but nothing
+//     changes on screen.
 //
 // WHY THIS IS "OPTIMIZATION"
 // ---------------------------------------------------------------------------------------
@@ -20,10 +30,16 @@
 //   - VSync eliminates screen tearing at the cost of a small amount of input latency.
 //   - A lower FPS cap while the game is in the background/minimized saves real power on
 //     laptops and mobile, since nothing there is even visible.
-//   - Quality level / resolution / anti-aliasing are the actual "reduce GPU workload"
-//     levers - letting the player trade visual fidelity for frame rate on weaker hardware.
+//   - Quality level / resolution / anti-aliasing / post-processing are the actual
+//     "reduce GPU workload" levers - letting the player trade visual fidelity for frame
+//     rate on weaker hardware.
 
+using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+#if UNITY_POST_PROCESSING_STACK_V2
+using UnityEngine.Rendering.PostProcessing;
+#endif
 
 [AddComponentMenu("KH/Settings/" + nameof(KHGameSettingsManager)), DisallowMultipleComponent]
 [DefaultExecutionOrder(-1000)] // Apply saved settings before other scripts read them.
@@ -44,12 +60,18 @@ public class KHGameSettingsManager : MonoBehaviour
     private const string PrefKeyResWidth = "Settings_ResWidth";
     private const string PrefKeyResHeight = "Settings_ResHeight";
     private const string PrefKeyFullscreenMode = "Settings_FullscreenMode";
+    private const string PrefKeyPostProcessing = "Settings_PostProcessing";
 
     // ---- current state (read-only from outside; use the SetX methods to change these) ----
     public int CurrentFpsCap { get; private set; } = 60; // 0 = Unlimited
     public int CurrentVSyncCount { get; private set; } = 1; // 0 = off, 1 = full, 2 = half refresh
     public int CurrentQualityLevel { get; private set; }
     public int CurrentAntiAliasing { get; private set; } // 0, 2, 4 or 8
+    public bool CurrentPostProcessingEnabled { get; private set; } = true;
+
+    /// <summary>Raised after post-processing is toggled. Hook this if you use a custom
+    /// pipeline or want to flip your own Volumes/effects.</summary>
+    public event Action<bool> PostProcessingChanged;
 
     private int fpsCapBeforeBackground;
     private bool isThrottledInBackground;
@@ -64,7 +86,21 @@ public class KHGameSettingsManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        // Cameras in newly loaded scenes don't know about the setting, so re-apply it
+        // every time a scene loads.
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
         LoadAndApplySavedSettings();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ApplyPostProcessing();
     }
 
     // =====================================================================================
@@ -162,6 +198,48 @@ public class KHGameSettingsManager : MonoBehaviour
     }
 
     // =====================================================================================
+    // Post-processing (bloom, color grading, SSAO, etc.) - one of the most expensive
+    // per-pixel costs, so a toggle is a big win on weaker GPUs.
+    // =====================================================================================
+
+    public void SetPostProcessing(bool enabled)
+    {
+        CurrentPostProcessingEnabled = enabled;
+        ApplyPostProcessing();
+
+        PlayerPrefs.SetInt(PrefKeyPostProcessing, enabled ? 1 : 0);
+        PlayerPrefs.Save();
+    }
+
+    public void TogglePostProcessing() => SetPostProcessing(!CurrentPostProcessingEnabled);
+
+    /// <summary>Pushes the current setting onto every camera in the loaded scenes. Call this
+    /// yourself if you spawn a camera at runtime after the scene has loaded.</summary>
+    public void ApplyPostProcessing()
+    {
+        bool enabled = CurrentPostProcessingEnabled;
+
+#if UNITY_POST_PROCESSING_STACK_V2
+        // Built-in pipeline: disabling the PostProcessLayer skips the whole stack.
+        // (On Unity 2023+, swap in FindObjectsByType<T>(FindObjectsInactive.Include,
+        // FindObjectsSortMode.None) to silence the deprecation warning.)
+        foreach (var layer in FindObjectsOfType<PostProcessLayer>(true))
+            layer.enabled = enabled;
+#endif
+
+#if USING_URP
+        // URP: per-camera "Post Processing" checkbox.
+        foreach (var cam in FindObjectsOfType<Camera>(true))
+        {
+            var data = cam.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
+            if (data != null) data.renderPostProcessing = enabled;
+        }
+#endif
+
+        PostProcessingChanged?.Invoke(enabled);
+    }
+
+    // =====================================================================================
     // Background throttling - saves real power/heat by capping FPS hard while the game
     // isn't actually visible (minimized, alt-tabbed, or on mobile backgrounded).
     // =====================================================================================
@@ -216,6 +294,7 @@ public class KHGameSettingsManager : MonoBehaviour
 
         SetQualityLevel(savedQuality);
         SetAntiAliasing(savedAA);
+        SetPostProcessing(PlayerPrefs.GetInt(PrefKeyPostProcessing, 1) == 1);
 
         // Only restore a saved resolution if one was actually saved before (a width of 0
         // means "never saved" - leave the OS/engine's chosen default resolution alone).
@@ -239,6 +318,7 @@ public class KHGameSettingsManager : MonoBehaviour
         PlayerPrefs.DeleteKey(PrefKeyResWidth);
         PlayerPrefs.DeleteKey(PrefKeyResHeight);
         PlayerPrefs.DeleteKey(PrefKeyFullscreenMode);
+        PlayerPrefs.DeleteKey(PrefKeyPostProcessing);
         PlayerPrefs.Save();
 
         LoadAndApplySavedSettings();

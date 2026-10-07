@@ -1,15 +1,10 @@
+using KH.Enums;
 using UnityEngine;
 
-namespace KH
+namespace KH.Utils
 {
     public static class KHUtils
     {
-        public enum XMLColors
-        {
-            White,
-            Red,
-            Yellow,
-        }
         public static Vector2 GetHotspotPosition(Texture2D texture, CursorHotspot position)
         {
             float width = texture.width;

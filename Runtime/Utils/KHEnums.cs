@@ -1,5 +1,7 @@
-namespace KH
+namespace KH.Enums
 {
+    #region CursorHotspot
+
     public enum CursorHotspot
     {
         TopLeft,
@@ -12,4 +14,30 @@ namespace KH
         BottomCenter,
         BottomRight
     }
+
+    #endregion
+    #region KHUIAnimation
+
+    public enum KHUIAnimation
+    {
+        None,
+        Pop,
+        Fade,
+        SlideLeft,
+        SlideRight,
+        SlideUp,
+        SlideDown
+    }
+
+    #endregion
+    #region XMLColors
+
+    public enum XMLColors
+    {
+        White,
+        Red,
+        Yellow,
+    }
+
+    #endregion
 }

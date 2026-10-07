@@ -1,5 +1,9 @@
 using KH;
 using UnityEngine;
+using KH.Utils;
+using KH.Enums;
+
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -162,7 +166,7 @@ public class KHShadowGenerator : KHManagedBehaviour, IKHManagedUpdate
         shadowRenderer = shadowObject.AddComponent<SpriteRenderer>();
 
 #if UNITY_EDITOR
-        Debug.Log($"ShadowObject Created for {name}".AddColorTag(KHUtils.XMLColors.White), this);
+        Debug.Log($"ShadowObject Created for {name}".AddColorTag(XMLColors.White), this);
 #endif
     }
 

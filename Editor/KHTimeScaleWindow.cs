@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using KH;
 
-namespace KHWindow
+namespace KH.EditorTools
 {
     #region  TimeScaleSettings
 

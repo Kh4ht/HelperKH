@@ -18,5 +18,12 @@
         "helper",
         "debug",
         "tools"
+    ],
+    "samples": [
+        {
+            "displayName": "Reusable UI",
+            "description": "Prefabs and sprites for common UI elements.",
+            "path": "Samples~/ReusableUI"
+        }
     ]
 }

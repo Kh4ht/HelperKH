@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using KH.Enums;
+using KH.Utils;
 using UnityEngine;
 
 namespace KH
@@ -72,7 +74,7 @@ namespace KH
             if (_registry.ContainsKey(key))
             {
                 if (showLogMessage)
-                    Debug.Log($"{nameof(KHPoolManager)} Pool '{key}' is already registered. Returning existing pool.".AddColorTag(KHUtils.XMLColors.White));
+                    Debug.Log($"{nameof(KHPoolManager)} Pool '{key}' is already registered. Returning existing pool.".AddColorTag(XMLColors.White));
 
                 return GetPool<T>(key);
             }

@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
-using KH;
+using KH.Utils;
+using KH.Enums;
+using System.Text;
+
 namespace KH
 {
     public static class Kh
     {
         #region FIELDS
 
+        private static readonly int[] RomanianValues = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
 
+        private static readonly string[] RomanianSymbols = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
 
         #endregion
         #region CHANGE CURSOR
@@ -34,7 +39,7 @@ namespace KH
         {
             if (Mouse.current == null)
             {
-                Debug.LogWarning("Mouse input is unavailable.".AddColorTag(KHUtils.XMLColors.Yellow));
+                Debug.LogWarning("Mouse input is unavailable.".AddColorTag(XMLColors.Yellow));
                 return Vector2.zero;
             }
 
@@ -101,12 +106,12 @@ namespace KH
         {
             if (camera == null)
             {
-                Debug.LogError($"{nameof(camera)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(camera)} is NULL".AddColorTag(XMLColors.Red));
                 return Vector2.zero;
             }
             if (!camera.orthographic)
             {
-                Debug.LogWarning("Camera is not orthographic".AddColorTag(KHUtils.XMLColors.Yellow));
+                Debug.LogWarning("Camera is not orthographic".AddColorTag(XMLColors.Yellow));
                 return Vector2.zero;
             }
 
@@ -122,7 +127,7 @@ namespace KH
         {
             if (list == null)
             {
-                Debug.LogError($"{nameof(list)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(list)} is NULL".AddColorTag(XMLColors.Red));
                 return true;
             }
 
@@ -152,7 +157,7 @@ namespace KH
             // Validate inputs
             if (list.KHIsEmpty() || count < 1 || count > list.Count)
             {
-                Debug.LogError($"Invalid parameters: list size={list?.Count ?? 0}, count={count}".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"Invalid parameters: list size={list?.Count ?? 0}, count={count}".AddColorTag(XMLColors.Red));
                 return new List<T>();
             }
 
@@ -255,12 +260,12 @@ namespace KH
         {
             if (a == Vector3.negativeInfinity)
             {
-                Debug.LogError($"{nameof(a)} is {nameof(Vector3.negativeInfinity)}".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(a)} is {nameof(Vector3.negativeInfinity)}".AddColorTag(XMLColors.Red));
                 return float.MaxValue;
             }
             if (b == Vector3.negativeInfinity)
             {
-                Debug.LogError($"{nameof(b)} is {nameof(Vector3.negativeInfinity)}".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(b)} is {nameof(Vector3.negativeInfinity)}".AddColorTag(XMLColors.Red));
                 return float.MaxValue;
             }
 
@@ -282,12 +287,12 @@ namespace KH
         {
             if (a == null)
             {
-                Debug.LogError($"{nameof(a)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(a)} is NULL".AddColorTag(XMLColors.Red));
                 return float.MaxValue;
             }
             if (b == null)
             {
-                Debug.LogError($"{nameof(b)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(b)} is NULL".AddColorTag(XMLColors.Red));
                 return float.MaxValue;
             }
 
@@ -309,12 +314,12 @@ namespace KH
         {
             if (a == null)
             {
-                Debug.LogError($"{nameof(a)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(a)} is NULL".AddColorTag(XMLColors.Red));
                 return float.MaxValue;
             }
             if (b == null)
             {
-                Debug.LogError($"{nameof(b)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(b)} is NULL".AddColorTag(XMLColors.Red));
                 return float.MaxValue;
             }
 
@@ -416,6 +421,12 @@ namespace KH
         /// <param name="moveSpeed">The speed at which to move, in units per call.</param>
         public static void KHMoveTowards(this Transform transform, Vector3 targetPos, float moveSpeed)
         {
+            if (SqrDistanceIsLessThan(transform.position, targetPos, moveSpeed))
+            {
+                transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
+                return;
+            }
+
             transform.position += (Vector3)GetDir(transform.position, targetPos) * moveSpeed;
         }
 
@@ -477,12 +488,12 @@ namespace KH
         {
             if (current == null)
             {
-                Debug.LogError($"{nameof(current)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(current)} is NULL".AddColorTag(XMLColors.Red));
                 return Vector2.zero;
             }
             if (target == null)
             {
-                Debug.LogError($"{nameof(target)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(target)} is NULL".AddColorTag(XMLColors.Red));
                 return Vector2.zero;
             }
 
@@ -503,12 +514,12 @@ namespace KH
         {
             if (current == null)
             {
-                Debug.LogError($"{nameof(current)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(current)} is NULL".AddColorTag(XMLColors.Red));
                 return Vector2.zero;
             }
             if (target == null)
             {
-                Debug.LogError($"{nameof(target)} is NULL".AddColorTag(KHUtils.XMLColors.Red));
+                Debug.LogError($"{nameof(target)} is NULL".AddColorTag(XMLColors.Red));
                 return Vector2.zero;
             }
 
@@ -597,18 +608,57 @@ namespace KH
         }
 
         #endregion
-        #region ROUND
+        #region NUMERIC
 
-
+        /// <summary>
+        /// Rounds a float to the given number of decimal places.
+        /// Example: 3.14159f.KHRoundToDecimalPlaces(2) returns 3.14f.
+        /// </summary>
+        /// <param name="value">The number to round.</param>
+        /// <param name="decimalPlaces">How many digits to keep after the decimal point (default is 2).</param>
+        /// <returns>The rounded float.</returns>
         public static float KHRoundToDecimalPlaces(this float value, int decimalPlaces = 2)
         {
             float multiplier = Mathf.Pow(10f, decimalPlaces);
             return Mathf.Round(value * multiplier) / multiplier;
         }
 
+        /// <summary>
+        /// Rounds both the X and Y of a Vector2 to the given number of decimal places.
+        /// Example: new Vector2(1.2345f, 6.789f).KHRoundToDecimalPlaces(2) returns (1.23, 6.79).
+        /// </summary>
+        /// <param name="value">The vector to round.</param>
+        /// <param name="decimalPlaces">How many digits to keep after the decimal point (default is 2).</param>
+        /// <returns>A new Vector2 with both components rounded.</returns>
         public static Vector2 KHRoundToDecimalPlaces(this Vector2 value, int decimalPlaces = 2)
         {
             return new Vector2(value.x.KHRoundToDecimalPlaces(decimalPlaces), value.y.KHRoundToDecimalPlaces(decimalPlaces));
+        }
+
+        /// <summary>
+        /// Converts an integer to a Roman numeral string.
+        /// Example: 4 returns "IV", 14 returns "XIV", 1994 returns "MCMXCIV".
+        /// If the number is 0, negative, or 4000 and above, it can't be written as a standard
+        /// Roman numeral, so the normal number is returned as text instead.
+        /// </summary>
+        /// <param name="number">The number to convert (valid range is 1 to 3999).</param>
+        /// <returns>The Roman numeral, or the plain number as text if it's out of range.</returns>
+        public static string KHToRoman(this int number)
+        {
+            if (number <= 0 || number >= 4000)
+                return number.ToString(); // fallback: Roman numerals have no zero and no standard form above 3999
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < RomanianValues.Length; i++)
+            {
+                while (number >= RomanianValues[i])
+                {
+                    sb.Append(RomanianSymbols[i]);
+                    number -= RomanianValues[i];
+                }
+            }
+
+            return sb.ToString();
         }
 
         #endregion

@@ -3,7 +3,8 @@
     "references": [
         "DOTween.Modules",
         "Unity.InputSystem",
-        "PrimeTween.Runtime"
+        "PrimeTween.Runtime",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

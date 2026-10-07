@@ -7,26 +7,29 @@
 using UnityEditor;
 using UnityEngine;
 
-public class MasterSpriteShaderGUI : ShaderGUI
+namespace KH.EditorTools
 {
-    private struct Section
-    {
-        public string title;
-        public string toggleProp;   // property name that drives the [Toggle] keyword, or null for always-visible
-        public string keyword;      // shader_feature_local keyword this toggle must enable/disable
-        public string[] props;      // property names to show when expanded
 
-        public Section(string title, string toggleProp, string keyword, params string[] props)
+    public class MasterSpriteShaderGUI : ShaderGUI
+    {
+        private struct Section
         {
-            this.title = title;
-            this.toggleProp = toggleProp;
-            this.keyword = keyword;
-            this.props = props;
-        }
-    }
+            public string title;
+            public string toggleProp;   // property name that drives the [Toggle] keyword, or null for always-visible
+            public string keyword;      // shader_feature_local keyword this toggle must enable/disable
+            public string[] props;      // property names to show when expanded
 
-    private static readonly Section[] sections = new[]
-    {
+            public Section(string title, string toggleProp, string keyword, params string[] props)
+            {
+                this.title = title;
+                this.toggleProp = toggleProp;
+                this.keyword = keyword;
+                this.props = props;
+            }
+        }
+
+        private static readonly Section[] sections = new[]
+        {
         new Section("Alpha Cutoff", "_EnableAlphaCutoff", "_ALPHACUTOFF_ON", "_AlphaCutoff"),
         new Section("Outer Outline", "_EnableOutline", "_OUTLINE_ON", "_OutlineColor", "_OutlineWidth", "_OutlineOnly"),
         new Section("Inner Outline / Glow", "_EnableInnerOutline", "_INNEROUTLINE_ON", "_InnerOutlineColor", "_InnerOutlineWidth"),
@@ -42,134 +45,135 @@ public class MasterSpriteShaderGUI : ShaderGUI
         new Section("Wave Distortion", "_EnableWave", "_WAVE_ON", "_WaveAmplitude", "_WaveFrequency", "_WaveSpeed", "_WaveVertical"),
     };
 
-    private static readonly System.Collections.Generic.Dictionary<string, bool> foldoutStates =
-        new System.Collections.Generic.Dictionary<string, bool>();
+        private static readonly System.Collections.Generic.Dictionary<string, bool> foldoutStates =
+            new System.Collections.Generic.Dictionary<string, bool>();
 
-    public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
-    {
-        Material material = materialEditor.target as Material;
-
-        EditorGUILayout.Space(4);
-        DrawProp(materialEditor, properties, "_MainTex");
-        DrawProp(materialEditor, properties, "_Color");
-        EditorGUILayout.Space(8);
-
-        EditorGUILayout.LabelField("Effects", EditorStyles.boldLabel);
-
-        foreach (var section in sections)
+        public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            DrawSection(materialEditor, properties, material, section);
-        }
+            Material material = materialEditor.target as Material;
 
-        EditorGUILayout.Space(10);
-        EditorGUILayout.LabelField("Render Settings", EditorStyles.boldLabel);
-        DrawProp(materialEditor, properties, "_Cull");
-        DrawProp(materialEditor, properties, "_ZWrite");
+            EditorGUILayout.Space(4);
+            DrawProp(materialEditor, properties, "_MainTex");
+            DrawProp(materialEditor, properties, "_Color");
+            EditorGUILayout.Space(8);
 
-        EditorGUILayout.Space(10);
-        if (GUILayout.Button("Reset All Effects To Off"))
-        {
+            EditorGUILayout.LabelField("Effects", EditorStyles.boldLabel);
+
             foreach (var section in sections)
             {
-                if (!string.IsNullOrEmpty(section.toggleProp))
-                {
-                    MaterialProperty toggle = FindProp(section.toggleProp, properties, false);
-                    if (toggle != null) toggle.floatValue = 0f;
-                }
-                if (!string.IsNullOrEmpty(section.keyword))
-                {
-                    SyncKeyword(materialEditor, section.keyword, false);
-                }
+                DrawSection(materialEditor, properties, material, section);
             }
-        }
 
-        materialEditor.RenderQueueField();
-        materialEditor.EnableInstancingField();
-    }
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("Render Settings", EditorStyles.boldLabel);
+            DrawProp(materialEditor, properties, "_Cull");
+            DrawProp(materialEditor, properties, "_ZWrite");
 
-    private void DrawSection(MaterialEditor materialEditor, MaterialProperty[] properties, Material material, Section section)
-    {
-        MaterialProperty toggleProp = string.IsNullOrEmpty(section.toggleProp)
-            ? null
-            : FindProp(section.toggleProp, properties, false);
-
-        bool isOn = toggleProp == null || toggleProp.floatValue > 0.5f;
-
-        // Keep the shader_feature_local keyword in sync with the toggle's value every
-        // frame - this is required because shader_feature keywords are NOT driven
-        // automatically unless Unity's built-in [Toggle] drawer is used, and this
-        // custom Inspector draws its own checkbox instead of that drawer.
-        if (toggleProp != null && !string.IsNullOrEmpty(section.keyword))
-        {
-            SyncKeyword(materialEditor, section.keyword, isOn);
-        }
-
-        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-        EditorGUILayout.BeginHorizontal();
-
-        if (!foldoutStates.ContainsKey(section.title))
-            foldoutStates[section.title] = isOn;
-
-        if (toggleProp != null)
-        {
-            EditorGUI.BeginChangeCheck();
-            bool newOn = EditorGUILayout.Toggle(isOn, GUILayout.Width(18));
-            if (EditorGUI.EndChangeCheck())
+            EditorGUILayout.Space(10);
+            if (GUILayout.Button("Reset All Effects To Off"))
             {
-                toggleProp.floatValue = newOn ? 1f : 0f;
-                isOn = newOn;
-                foldoutStates[section.title] = newOn;
-                SyncKeyword(materialEditor, section.keyword, newOn);
-            }
-        }
-
-        foldoutStates[section.title] = EditorGUILayout.Foldout(
-            foldoutStates[section.title], section.title, true, EditorStyles.foldoutHeader);
-
-        EditorGUILayout.EndHorizontal();
-
-        if (foldoutStates[section.title])
-        {
-            EditorGUI.indentLevel++;
-            using (new EditorGUI.DisabledScope(!isOn))
-            {
-                foreach (string propName in section.props)
+                foreach (var section in sections)
                 {
-                    DrawProp(materialEditor, properties, propName);
+                    if (!string.IsNullOrEmpty(section.toggleProp))
+                    {
+                        MaterialProperty toggle = FindProp(section.toggleProp, properties, false);
+                        if (toggle != null) toggle.floatValue = 0f;
+                    }
+                    if (!string.IsNullOrEmpty(section.keyword))
+                    {
+                        SyncKeyword(materialEditor, section.keyword, false);
+                    }
                 }
             }
-            EditorGUI.indentLevel--;
+
+            materialEditor.RenderQueueField();
+            materialEditor.EnableInstancingField();
         }
 
-        EditorGUILayout.EndVertical();
-    }
-
-    private void SyncKeyword(MaterialEditor materialEditor, string keyword, bool on)
-    {
-        foreach (Object target in materialEditor.targets)
+        private void DrawSection(MaterialEditor materialEditor, MaterialProperty[] properties, Material material, Section section)
         {
-            Material m = target as Material;
-            if (m == null) continue;
+            MaterialProperty toggleProp = string.IsNullOrEmpty(section.toggleProp)
+                ? null
+                : FindProp(section.toggleProp, properties, false);
 
-            bool currentlyOn = m.IsKeywordEnabled(keyword);
-            if (currentlyOn == on) continue;
+            bool isOn = toggleProp == null || toggleProp.floatValue > 0.5f;
 
-            if (on) m.EnableKeyword(keyword);
-            else m.DisableKeyword(keyword);
+            // Keep the shader_feature_local keyword in sync with the toggle's value every
+            // frame - this is required because shader_feature keywords are NOT driven
+            // automatically unless Unity's built-in [Toggle] drawer is used, and this
+            // custom Inspector draws its own checkbox instead of that drawer.
+            if (toggleProp != null && !string.IsNullOrEmpty(section.keyword))
+            {
+                SyncKeyword(materialEditor, section.keyword, isOn);
+            }
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.BeginHorizontal();
+
+            if (!foldoutStates.ContainsKey(section.title))
+                foldoutStates[section.title] = isOn;
+
+            if (toggleProp != null)
+            {
+                EditorGUI.BeginChangeCheck();
+                bool newOn = EditorGUILayout.Toggle(isOn, GUILayout.Width(18));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    toggleProp.floatValue = newOn ? 1f : 0f;
+                    isOn = newOn;
+                    foldoutStates[section.title] = newOn;
+                    SyncKeyword(materialEditor, section.keyword, newOn);
+                }
+            }
+
+            foldoutStates[section.title] = EditorGUILayout.Foldout(
+                foldoutStates[section.title], section.title, true, EditorStyles.foldoutHeader);
+
+            EditorGUILayout.EndHorizontal();
+
+            if (foldoutStates[section.title])
+            {
+                EditorGUI.indentLevel++;
+                using (new EditorGUI.DisabledScope(!isOn))
+                {
+                    foreach (string propName in section.props)
+                    {
+                        DrawProp(materialEditor, properties, propName);
+                    }
+                }
+                EditorGUI.indentLevel--;
+            }
+
+            EditorGUILayout.EndVertical();
         }
-    }
 
-    private void DrawProp(MaterialEditor materialEditor, MaterialProperty[] properties, string name)
-    {
-        MaterialProperty prop = FindProp(name, properties, false);
-        if (prop != null)
+        private void SyncKeyword(MaterialEditor materialEditor, string keyword, bool on)
         {
-            materialEditor.ShaderProperty(prop, prop.displayName);
-        }
-    }
+            foreach (Object target in materialEditor.targets)
+            {
+                Material m = target as Material;
+                if (m == null) continue;
 
-    private MaterialProperty FindProp(string name, MaterialProperty[] properties, bool required)
-    {
-        return FindProperty(name, properties, required);
+                bool currentlyOn = m.IsKeywordEnabled(keyword);
+                if (currentlyOn == on) continue;
+
+                if (on) m.EnableKeyword(keyword);
+                else m.DisableKeyword(keyword);
+            }
+        }
+
+        private void DrawProp(MaterialEditor materialEditor, MaterialProperty[] properties, string name)
+        {
+            MaterialProperty prop = FindProp(name, properties, false);
+            if (prop != null)
+            {
+                materialEditor.ShaderProperty(prop, prop.displayName);
+            }
+        }
+
+        private MaterialProperty FindProp(string name, MaterialProperty[] properties, bool required)
+        {
+            return FindProperty(name, properties, required);
+        }
     }
 }
