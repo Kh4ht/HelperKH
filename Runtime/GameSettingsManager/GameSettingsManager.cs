@@ -72,9 +72,18 @@ public class KHGameSettingsManager : MonoBehaviour
     /// <summary>Raised after post-processing is toggled. Hook this if you use a custom
     /// pipeline or want to flip your own Volumes/effects.</summary>
     public event Action<bool> PostProcessingChanged;
+    public event Action SettingsReset;
 
     private int fpsCapBeforeBackground;
     private bool isThrottledInBackground;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Bootstrap()
+    {
+        if (Instance != null) return;
+        var go = new GameObject(nameof(KHGameSettingsManager));
+        go.AddComponent<KHGameSettingsManager>(); // Awake sets Instance + DontDestroyOnLoad
+    }
 
     private void Awake()
     {
@@ -95,7 +104,8 @@ public class KHGameSettingsManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (Instance == this) SceneManager.sceneLoaded -= OnSceneLoaded;
+        if (Instance == this)
+            SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -322,5 +332,7 @@ public class KHGameSettingsManager : MonoBehaviour
         PlayerPrefs.Save();
 
         LoadAndApplySavedSettings();
+
+        SettingsReset?.Invoke();
     }
 }

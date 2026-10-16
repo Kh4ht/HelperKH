@@ -189,29 +189,23 @@ namespace KH
         }
 
         #endregion
-        #region ID
+        // #region ID
 
 
-        /// <summary>
-        /// Generates a unique identifier by combining a base name with a random suffix.
-        /// </summary>
-        /// <param name="uniqueName">The base name used at the beginning of the generated identifier.</param>
-        /// <param name="additionalRandomCharCount">The number of random characters to append to the identifier suffix.</param>
-        /// <returns>A generated identifier string that includes the provided name and random characters.</returns>
-        public static string GenerateId(string uniqueName, int additionalRandomCharCount)
-        {
-            string id = "";
-            id = string.IsNullOrEmpty(uniqueName) ? "" : uniqueName + "__";
+        // /// <summary>
+        // /// Generates a unique identifier by combining a base name with a random suffix.
+        // /// </summary>
+        // /// <param name="uniqueName">The base name used at the beginning of the generated identifier.</param>
+        // /// <param name="randomCharactersCount">The number of random characters to append to the identifier suffix.</param>
+        // /// <returns>A generated identifier string that includes the provided name and random characters.</returns>
+        // public static string KHGenerateId(string uniqueName = "")
+        // {
+        //     return string.IsNullOrEmpty(uniqueName)
+        //         ? System.Guid.NewGuid().ToString("N")
+        //         : $"{uniqueName.Replace(' ', '_')}__{System.Guid.NewGuid():N}";
+        // }
 
-            const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=|\\\'\"/?.>,<";
-
-            for (var i = 0; i < additionalRandomCharCount; i++)
-                id += characters.KHPickRandom();
-
-            return id.Replace(" ", "_");
-        }
-
-        #endregion
+        // #endregion
         #region HAS TYPE
 
 
@@ -244,6 +238,7 @@ namespace KH
 
         #endregion
         #region SQUARE DISTANCE
+
 
         /// <summary>
         /// Computes the squared distance between two points. Cheaper than a real distance check
@@ -335,7 +330,7 @@ namespace KH
         /// <param name="threshold">The distance threshold to compare against.</param>
         /// <param name="sqrDis">The squared distance that was computed between <paramref name="a"/> and <paramref name="b"/>.</param>
         /// <returns>True if the distance between <paramref name="a"/> and <paramref name="b"/> is less than or equal to <paramref name="threshold"/>.</returns>
-        public static bool SqrDistanceIsLessThan(Vector3 a, Vector3 b, float threshold, out float sqrDis)
+        public static bool KHIsDistanceLessThanOrEqualThreshold(Vector3 a, Vector3 b, float threshold, out float sqrDis)
         {
             sqrDis = GetSqrDistance(a, b);
             return sqrDis <= threshold * threshold;
@@ -349,9 +344,9 @@ namespace KH
         /// <param name="b">The second point.</param>
         /// <param name="threshold">The distance threshold to compare against.</param>
         /// <returns>True if the distance between <paramref name="a"/> and <paramref name="b"/> is less than or equal to <paramref name="threshold"/>.</returns>
-        public static bool SqrDistanceIsLessThan(Vector3 a, Vector3 b, float threshold)
+        public static bool KHIsDistanceLessThanOrEqualThreshold(Vector3 a, Vector3 b, float threshold)
         {
-            return SqrDistanceIsLessThan(a, b, threshold, out _);
+            return KHIsDistanceLessThanOrEqualThreshold(a, b, threshold, out _);
         }
 
         /// <summary>
@@ -363,7 +358,7 @@ namespace KH
         /// <param name="threshold">The distance threshold to compare against.</param>
         /// <param name="sqrDis">The squared distance that was computed between <paramref name="a"/> and <paramref name="b"/>.</param>
         /// <returns>True if the distance between <paramref name="a"/> and <paramref name="b"/> is less than or equal to <paramref name="threshold"/>.</returns>
-        public static bool SqrDistanceIsLessThan(Transform a, Transform b, float threshold, out float sqrDis)
+        public static bool KHIsDistanceLessThanOrEqualThreshold(Transform a, Transform b, float threshold, out float sqrDis)
         {
             sqrDis = GetSqrDistance(a, b);
             return sqrDis <= threshold * threshold;
@@ -377,37 +372,9 @@ namespace KH
         /// <param name="b">The second Transform.</param>
         /// <param name="threshold">The distance threshold to compare against.</param>
         /// <returns>True if the distance between <paramref name="a"/> and <paramref name="b"/> is less than or equal to <paramref name="threshold"/>.</returns>
-        public static bool SqrDistanceIsLessThan(Transform a, Transform b, float threshold)
+        public static bool KHIsDistanceLessThanOrEqualThreshold(Transform a, Transform b, float threshold)
         {
-            return SqrDistanceIsLessThan(a, b, threshold, out _);
-        }
-
-        /// <summary>
-        /// Checks whether the distance between two MonoBehaviours is less than or equal to <paramref name="threshold"/>,
-        /// using a squared-distance comparison to avoid a square root.
-        /// </summary>
-        /// <param name="a">The first MonoBehaviour.</param>
-        /// <param name="b">The second MonoBehaviour.</param>
-        /// <param name="threshold">The distance threshold to compare against.</param>
-        /// <param name="sqrDis">The squared distance that was computed between <paramref name="a"/> and <paramref name="b"/>.</param>
-        /// <returns>True if the distance between <paramref name="a"/> and <paramref name="b"/> is less than or equal to <paramref name="threshold"/>.</returns>
-        public static bool SqrDistanceIsLessThan(MonoBehaviour a, MonoBehaviour b, float threshold, out float sqrDis)
-        {
-            sqrDis = GetSqrDistance(a, b);
-            return sqrDis <= threshold * threshold;
-        }
-
-        /// <summary>
-        /// Checks whether the distance between two MonoBehaviours is less than or equal to <paramref name="threshold"/>,
-        /// using a squared-distance comparison to avoid a square root.
-        /// </summary>
-        /// <param name="a">The first MonoBehaviour.</param>
-        /// <param name="b">The second MonoBehaviour.</param>
-        /// <param name="threshold">The distance threshold to compare against.</param>
-        /// <returns>True if the distance between <paramref name="a"/> and <paramref name="b"/> is less than or equal to <paramref name="threshold"/>.</returns>
-        public static bool SqrDistanceIsLessThan(MonoBehaviour a, MonoBehaviour b, float threshold)
-        {
-            return SqrDistanceIsLessThan(a, b, threshold, out _);
+            return KHIsDistanceLessThanOrEqualThreshold(a, b, threshold, out _);
         }
 
         #endregion
@@ -419,15 +386,17 @@ namespace KH
         /// <param name="transform">The Transform to move.</param>
         /// <param name="targetPos">The position to move towards.</param>
         /// <param name="moveSpeed">The speed at which to move, in units per call.</param>
-        public static void KHMoveTowards(this Transform transform, Vector3 targetPos, float moveSpeed)
+        /// <returns>True if the Transform has reached <paramref name="targetPos"/>; otherwise, false.</returns>
+        public static bool KHMoveTowards(this Transform transform, Vector3 targetPos, float moveSpeed)
         {
-            if (SqrDistanceIsLessThan(transform.position, targetPos, moveSpeed))
+            if (KHIsDistanceLessThanOrEqualThreshold(transform.position, targetPos, moveSpeed))
             {
                 transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
-                return;
+                return true;
             }
 
             transform.position += (Vector3)GetDir(transform.position, targetPos) * moveSpeed;
+            return false;
         }
 
         /// <summary>
@@ -436,9 +405,10 @@ namespace KH
         /// <param name="monoBehaviour">The MonoBehaviour whose Transform to move.</param>
         /// <param name="targetPos">The position to move towards.</param>
         /// <param name="moveSpeed">The speed at which to move, in units per call.</param>
-        public static void KHMoveTowards(this MonoBehaviour monoBehaviour, Vector3 targetPos, float moveSpeed)
+        /// <returns>True if the Transform has reached <paramref name="targetPos"/>; otherwise, false.</returns>
+        public static bool KHMoveTowards(this MonoBehaviour monoBehaviour, Vector3 targetPos, float moveSpeed)
         {
-            monoBehaviour.transform.KHMoveTowards(targetPos, moveSpeed);
+            return monoBehaviour.transform.KHMoveTowards(targetPos, moveSpeed);
         }
 
         #endregion
