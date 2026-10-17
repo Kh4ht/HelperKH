@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace KH
 {
     /// <summary>
-    /// A generic, reusable pool for any MonoBehaviour that implements IPoolable.
+    /// A generic, reusable pool for any MonoBehaviour that implements IKHPoolable.
     /// </summary>
-    public class KHObjectPool<T> : IPoolInfo where T : MonoBehaviour, IKHPoolable
+    public class KHObjectPool<T> : IPoolInfo, IDisposablePool where T : MonoBehaviour, IKHPoolable
     {
         // ── Config ────────────────────────────────────────────────────────────
         private readonly T _prefab;
@@ -27,25 +28,37 @@ namespace KH
         public int CountActive => _active.Count;
         public int CountTotal => CountAvailable + CountActive;
 
+        /// <summary>Persistent pools survive scene changes and reloads.</summary>
+        public bool Persistent { get; }
+
+        /// <summary>Scene this pool was registered in (used for non-persistent cleanup).</summary>
+        public Scene OwnerScene { get; }
+
         /// <summary>Read-only view of currently active (spawned) instances.</summary>
         public IReadOnlyCollection<T> ActiveInstances => _active;
 
         // ── Constructor ───────────────────────────────────────────────────────
         /// <param name="prefab">Template object to clone.</param>
         /// <param name="initialSize">How many to pre-warm.</param>
-        /// <param name="parent">Optional parent transform for pooled objects.</param>
+        /// <param name="parent">Parent transform for pooled objects. Destroyed on Dispose.</param>
         /// <param name="expandable">If true, creates new instances when empty; otherwise returns null.</param>
         /// <param name="maxSize">Hard cap on total instances (0 = no cap).</param>
+        /// <param name="persistent">Survives scene changes when true.</param>
+        /// <param name="sceneHandle">Scene the pool belongs to.</param>
         public KHObjectPool(T prefab,
                             int initialSize = 10,
                             Transform parent = null,
                             bool expandable = true,
-                            int maxSize = 0)
+                            int maxSize = 0,
+                            bool persistent = false,
+                            Scene ownerScene = default)
         {
             _prefab = prefab;
             _parent = parent;
             _expandable = expandable;
             _maxSize = maxSize;
+            Persistent = persistent;
+            OwnerScene = ownerScene;
 
             Prewarm(initialSize);
         }
@@ -71,8 +84,12 @@ namespace KH
         /// <summary>Return an object to the pool.</summary>
         public void Despawn(T instance)
         {
+            // Destroyed (e.g. by a scene unload) or null: just forget it, no warning.
             if (instance == null)
+            {
+                _active.Remove(instance);
                 return;
+            }
 
             if (!_active.Contains(instance))
             {
@@ -98,17 +115,29 @@ namespace KH
                 Despawn(instance);
         }
 
-        /// <summary>Destroy ALL instances and clear both collections.</summary>
+        /// <summary>
+        /// Destroys ALL instances and the pool's parent object, and clears both collections.
+        /// Does not call OnDespawn: instances may already be destroyed or hold dead references.
+        /// </summary>
         public void Dispose()
         {
-            DespawnAll();
-
-            while (_available.Count > 0)
+            foreach (T instance in _active)
             {
-                var instance = _available.Pop();
                 if (instance != null)
                     Object.Destroy(instance.gameObject);
             }
+
+            while (_available.Count > 0)
+            {
+                T instance = _available.Pop();
+                if (instance != null)
+                    Object.Destroy(instance.gameObject);
+            }
+
+            _active.Clear();
+
+            if (_parent != null)
+                Object.Destroy(_parent.gameObject);
         }
 
         // ── Private helpers ───────────────────────────────────────────────────
@@ -126,8 +155,13 @@ namespace KH
 
         private T GetOrCreate()
         {
-            if (_available.Count > 0)
-                return _available.Pop();
+            // Skip instances that were destroyed while sitting in the pool.
+            while (_available.Count > 0)
+            {
+                T pooled = _available.Pop();
+                if (pooled != null)
+                    return pooled;
+            }
 
             if (!_expandable)
             {

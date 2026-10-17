@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using KH.Enums;
 using KH.Utils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace KH
 {
     /// <summary>
-    /// Singleton that owns all named pools.
-    /// Access via PoolManager.Instance anywhere in your project.
+    /// Owns all named pools. Creates itself on first access to <see cref="Ins"/>.
+    /// Non-persistent pools are disposed when their scene unloads; persistent pools survive.
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("KH/Systems/" + nameof(KHPoolManager))]
@@ -15,45 +16,88 @@ namespace KH
     {
         #region FIELDS
 
-        // ── Singleton ─────────────────────────────────────────────────────────
-        public static KHPoolManager Ins { get; private set; }
+        [KHResetStatic] private static KHPoolManager _ins;
+        [KHResetStatic] private static bool _quitting;
 
-        // ── Registry ──────────────────────────────────────────────────────────
+        /// <summary>
+        /// Created on first access. Returns null only while the application is quitting,
+        /// so shutdown code should use Ins?.Despawn(...).
+        /// </summary>
+        public static KHPoolManager Ins
+        {
+            get
+            {
+                if (_ins == null && !_quitting)
+                    _ins = new GameObject(nameof(KHPoolManager)).AddComponent<KHPoolManager>();
+
+                return _ins;
+            }
+        }
+
         // We store pools as object so we can hold mixed generic types.
         private readonly Dictionary<string, object> _registry = new();
-
-        // ── Inspector ─────────────────────────────────────────────────────────
-        [Tooltip("Do not destroy the target Object when loading a new Scene.")]
-        [SerializeField] private bool dontDestroyOnLoad = true;
 
         #endregion
         #region UNITY EVENTS
 
         private void Awake()
         {
-            if (Ins != null && Ins != this)
+            if (_ins != null && _ins != this)
             {
                 Destroy(gameObject);
                 return;
             }
-            Ins = this;
 
-            if (dontDestroyOnLoad)
-                DontDestroyOnLoad(gameObject);
+            _ins = this;
+            DontDestroyOnLoad(gameObject); // must be a root object, which it is when auto-created
+
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
 
-        // ── Cleanup ───────────────────────────────────────────────────────────
+        private void OnApplicationQuit()
+        {
+            _quitting = true;
+        }
+
         private void OnDestroy()
         {
-            // Each ObjectPool<T> holds MonoBehaviours — Unity cleans up GameObjects,
-            // but we call Dispose to trigger OnDespawn callbacks gracefully.
+            // A duplicate that destroyed itself in Awake never subscribed and has no pools.
+            if (_ins != this)
+                return;
+
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
+
             foreach (var kvp in _registry)
             {
-                // use reflection-free dynamic dispatch via the interface
                 if (kvp.Value is IDisposablePool dp)
                     dp.Dispose();
             }
+
             _registry.Clear();
+            _ins = null;
+        }
+
+        #endregion
+        #region SCENE CLEANUP
+
+        private void OnSceneUnloaded(Scene scene)
+        {
+            List<string> toRemove = null;
+
+            foreach (var kvp in _registry)
+            {
+                if (kvp.Value is IDisposablePool dp && !dp.Persistent && dp.OwnerScene == scene)
+                    (toRemove ??= new List<string>()).Add(kvp.Key);
+            }
+
+            if (toRemove == null)
+                return;
+
+            foreach (string key in toRemove)
+            {
+                ((IDisposablePool)_registry[key]).Dispose();
+                _registry.Remove(key);
+            }
         }
 
         #endregion
@@ -62,35 +106,54 @@ namespace KH
         // ── Registration ──────────────────────────────────────────────────────
 
         /// <summary>
-        /// Register (and optionally pre-warm) a pool. Call once — usually in Awake or a bootstrapper.
+        /// Register (and optionally pre-warm) a pool. Call once, usually in Awake or a bootstrapper.
+        /// Non-persistent pools are destroyed when the scene they were registered in unloads.
         /// </summary>
         public KHObjectPool<T> Register<T>(string key,
                                            T prefab,
                                            int initialSize = 0,
                                            bool expandable = true,
                                            int maxSize = 0,
-                                           bool showLogMessage = true) where T : MonoBehaviour, IKHPoolable
+                                           bool showLogMessage = true,
+                                           bool persistent = false) where T : MonoBehaviour, IKHPoolable
         {
-            if (_registry.ContainsKey(key))
-            {
-                if (showLogMessage)
-                    Debug.Log($"{nameof(KHPoolManager)} Pool '{key}' is already registered. Returning existing pool.".AddColorTag(XMLColors.White));
+            Scene activeScene = SceneManager.GetActiveScene();
 
-                return GetPool<T>(key);
+            if (_registry.TryGetValue(key, out object existing))
+            {
+                var existingInfo = existing as IDisposablePool;
+
+                // Leftover from a previous scene whose unload event hasn't fired yet: replace it.
+                if (existingInfo != null && !existingInfo.Persistent && existingInfo.OwnerScene != activeScene)
+                {
+                    existingInfo.Dispose();
+                    _registry.Remove(key);
+                }
+                else
+                {
+                    if (existingInfo != null && existingInfo.Persistent != persistent)
+                        Debug.LogWarning($"{nameof(KHPoolManager)} Pool '{key}' already exists with persistent = {existingInfo.Persistent}. The new value ({persistent}) is ignored.");
+
+                    if (showLogMessage)
+                        Debug.Log($"{nameof(KHPoolManager)} Pool '{key}' is already registered. Returning existing pool.".AddColorTag(XMLColors.White));
+
+                    return GetPool<T>(key);
+                }
             }
 
-            // create a dedicated parent transform to keep the hierarchy tidy
+            // Every pool parent lives under the manager (which is DontDestroyOnLoad).
+            // Non-persistent pools destroy their parent in Dispose.
             var parent = new GameObject($"Pool [{key}]").transform;
             parent.SetParent(transform);
 
-            var pool = new KHObjectPool<T>(prefab, initialSize, parent, expandable, maxSize);
+            var pool = new KHObjectPool<T>(prefab, initialSize, parent, expandable, maxSize, persistent, activeScene);
             _registry[key] = pool;
             return pool;
         }
 
         // ── Access ────────────────────────────────────────────────────────────
 
-        /// <summary>Retrieve a registered pool by key.</summary>
+        /// <summary>Retrieve a registered pool by key. Logs an error if it doesn't exist.</summary>
         public KHObjectPool<T> GetPool<T>(string key) where T : MonoBehaviour, IKHPoolable
         {
             if (_registry.TryGetValue(key, out var pool))
@@ -98,6 +161,13 @@ namespace KH
 
             Debug.LogError($"[PoolManager] No pool registered with key '{key}'.");
             return null;
+        }
+
+        /// <summary>Like GetPool, but silent when the pool doesn't exist.</summary>
+        public bool TryGetPool<T>(string key, out KHObjectPool<T> pool) where T : MonoBehaviour, IKHPoolable
+        {
+            pool = _registry.TryGetValue(key, out var found) ? found as KHObjectPool<T> : null;
+            return pool != null;
         }
 
         /// <summary>Retrieve all registered pools.</summary>
@@ -194,11 +264,4 @@ namespace KH
 
         #endregion
     }
-
-    #region INTERFACE
-
-    // Internal marker so PoolManager can dispose pools without knowing T.
-    internal interface IDisposablePool { void Dispose(); }
-
-    #endregion
 }

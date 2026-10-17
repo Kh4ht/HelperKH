@@ -341,7 +341,7 @@ namespace KH
 
             IsDead = false;
 
-            Health = _maxHealth * Mathf.Clamp(percent, 0.01f, 1);
+            _health = _maxHealth * Mathf.Clamp(percent, 0.01f, 1);
         }
 
         #endregion

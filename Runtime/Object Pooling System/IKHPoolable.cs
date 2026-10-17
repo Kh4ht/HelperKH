@@ -1,3 +1,5 @@
+using UnityEngine.SceneManagement;
+
 namespace KH
 {
     /// <summary>
@@ -17,5 +19,13 @@ namespace KH
     {
         int CountActive { get; }
         int CountTotal { get; }
+    }
+
+    // Lets the manager dispose and filter pools without knowing T.
+    internal interface IDisposablePool
+    {
+        bool Persistent { get; }
+        Scene OwnerScene { get; }
+        void Dispose();
     }
 }
