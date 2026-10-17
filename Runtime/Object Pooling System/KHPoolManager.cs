@@ -117,6 +117,12 @@ namespace KH
                                            bool showLogMessage = true,
                                            bool persistent = false) where T : MonoBehaviour, IKHPoolable
         {
+            if (string.IsNullOrEmpty(key))
+            {
+                Debug.LogError($"{nameof(KHPoolManager)} Cannot register a pool for '{(prefab != null ? prefab.name : "null")}' with an empty key. Is its ID generated?", prefab);
+                return null;
+            }
+
             Scene activeScene = SceneManager.GetActiveScene();
 
             if (_registry.TryGetValue(key, out object existing))
@@ -131,6 +137,11 @@ namespace KH
                 }
                 else
                 {
+                    if (existing is not KHObjectPool<T>)
+                    {
+                        Debug.LogError($"{nameof(KHPoolManager)} Key '{key}' is already used by a pool of a different type. Requested {typeof(T).Name}.");
+                        return null;
+                    }
                     if (existingInfo != null && existingInfo.Persistent != persistent)
                         Debug.LogWarning($"{nameof(KHPoolManager)} Pool '{key}' already exists with persistent = {existingInfo.Persistent}. The new value ({persistent}) is ignored.");
 
@@ -157,7 +168,13 @@ namespace KH
         public KHObjectPool<T> GetPool<T>(string key) where T : MonoBehaviour, IKHPoolable
         {
             if (_registry.TryGetValue(key, out var pool))
-                return pool as KHObjectPool<T>;
+            {
+                if (pool is KHObjectPool<T> typed)
+                    return typed;
+
+                Debug.LogError($"[PoolManager] Pool '{key}' exists but is not a pool of {typeof(T).Name}. Two prefabs may share the same key.");
+                return null;
+            }
 
             Debug.LogError($"[PoolManager] No pool registered with key '{key}'.");
             return null;
