@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using KH;
 using UnityEngine;
 namespace KH
 {
@@ -18,10 +16,6 @@ namespace KH
         private readonly List<Action> _onHealthChangedListeners = new();
         private readonly List<Action> _onMaxHealthReachedListeners = new();
         private readonly List<Action> _onMaxHealthChangedListeners = new();
-
-        // Private Fields
-        // private readonly MonoBehaviour owner;
-        // private readonly List<Coroutine> activeDots = new();
 
         private float lastDamageTime = -1f;
 
@@ -203,64 +197,8 @@ namespace KH
             Notify(_onMaxHealthChangedListeners);
         }
 
-        // private void StopAllDots()
-        // {
-        //     foreach (Coroutine c in activeDots)
-        //     {
-        //         if (c != null)
-        //             owner.StopCoroutine(c);
-        //     }
-
-        //     activeDots.Clear();
-        // }
-
-        // private IEnumerator DamageTickCoroutine(MonoBehaviour runner,
-        //                                         float duration,
-        //                                         float interval,
-        //                                         Action onTick,
-        //                                         Action onComplete)
-        // {
-        //     float elapsed = 0f;
-
-        //     while (elapsed < duration)
-        //     {
-        //         // 🔥 stop immediately if object is destroyed
-        //         if (!runner)
-        //             yield break;
-
-        //         yield return new WaitForSeconds(interval);
-
-        //         if (!runner)
-        //             yield break;
-
-        //         onTick?.Invoke();
-
-        //         elapsed += interval;
-        //     }
-
-        //     onComplete?.Invoke();
-        // }
-
         #endregion
         #region PUBLIC
-
-        // public void ApplyDamage(KHDamage khDamage)
-        // {
-        //     RemoveHealth(khDamage.mainDamage);
-
-        //     if (!owner || IsDead || !khDamage.HasOvertimeDamage)
-        //         return;
-
-        //     Coroutine c = null;
-
-        //     c = owner.StartCoroutine(DamageTickCoroutine(runner: owner,
-        //                                                  duration: khDamage.duration,
-        //                                                  interval: khDamage.duration / khDamage.ticks,
-        //                                                  onTick: () => RemoveHealth(khDamage.mainDamage * Mathf.Clamp01(khDamage.overTimeDamagePercent)),
-        //                                                  onComplete: () => activeDots.Remove(c)));
-
-        //     activeDots.Add(c);
-        // }
 
         /// <summary>
         /// Returns how many seconds have passed since the entity last took damage.
@@ -339,9 +277,9 @@ namespace KH
             if (!IsDead)
                 return;
 
-            IsDead = false;
-
             _health = _maxHealth * Mathf.Clamp(percent, 0.01f, 1);
+
+            IsDead = false;
         }
 
         #endregion

@@ -154,7 +154,13 @@ namespace KH
         }
 
         #endregion
-        #region FOR EACH CHILD
+        #region TRANSFORM CHILDREN
+
+        public static IEnumerable<Transform> KHGetAllChildren(this Transform transform)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+                yield return transform.GetChild(i);
+        }
 
         public static void KHForEachChild(this Transform transform, Action<Transform> action)
         {
