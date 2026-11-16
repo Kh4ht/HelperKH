@@ -30,14 +30,4 @@ namespace KH.Enums
     }
 
     #endregion
-    #region XMLColors
-
-    public enum XMLColors
-    {
-        White,
-        Red,
-        Yellow,
-    }
-
-    #endregion
 }

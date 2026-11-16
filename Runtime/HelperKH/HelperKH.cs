@@ -39,7 +39,7 @@ namespace KH
         {
             if (Mouse.current == null)
             {
-                Debug.LogWarning("Mouse input is unavailable.".AddColorTag(XMLColors.Yellow));
+                KHDebug.LogWarning("Mouse input is unavailable.");
                 return Vector2.zero;
             }
 
@@ -106,12 +106,12 @@ namespace KH
         {
             if (camera == null)
             {
-                Debug.LogError($"{nameof(camera)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(camera)} is NULL");
                 return Vector2.zero;
             }
             if (!camera.orthographic)
             {
-                Debug.LogWarning("Camera is not orthographic".AddColorTag(XMLColors.Yellow));
+                KHDebug.LogWarning("Camera is not orthographic");
                 return Vector2.zero;
             }
 
@@ -127,7 +127,7 @@ namespace KH
         {
             if (list == null)
             {
-                Debug.LogError($"{nameof(list)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(list)} is NULL");
                 return true;
             }
 
@@ -157,7 +157,7 @@ namespace KH
             // Validate inputs
             if (list.KHIsEmpty() || count < 1 || count > list.Count)
             {
-                Debug.LogError($"Invalid parameters: list size={list?.Count ?? 0}, count={count}".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"Invalid parameters: list size={list?.Count ?? 0}, count={count}");
                 return new List<T>();
             }
 
@@ -255,12 +255,12 @@ namespace KH
         {
             if (a == Vector3.negativeInfinity)
             {
-                Debug.LogError($"{nameof(a)} is {nameof(Vector3.negativeInfinity)}".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(a)} is {nameof(Vector3.negativeInfinity)}");
                 return float.MaxValue;
             }
             if (b == Vector3.negativeInfinity)
             {
-                Debug.LogError($"{nameof(b)} is {nameof(Vector3.negativeInfinity)}".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(b)} is {nameof(Vector3.negativeInfinity)}");
                 return float.MaxValue;
             }
 
@@ -282,12 +282,12 @@ namespace KH
         {
             if (a == null)
             {
-                Debug.LogError($"{nameof(a)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(a)} is NULL");
                 return float.MaxValue;
             }
             if (b == null)
             {
-                Debug.LogError($"{nameof(b)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(b)} is NULL");
                 return float.MaxValue;
             }
 
@@ -309,12 +309,12 @@ namespace KH
         {
             if (a == null)
             {
-                Debug.LogError($"{nameof(a)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(a)} is NULL");
                 return float.MaxValue;
             }
             if (b == null)
             {
-                Debug.LogError($"{nameof(b)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(b)} is NULL");
                 return float.MaxValue;
             }
 
@@ -407,8 +407,18 @@ namespace KH
         /// <param name="moveSpeed">The speed at which to move, in units per call.</param>
         /// <returns>True if the Transform has reached <paramref name="targetPos"/>; otherwise, false.</returns>
         public static bool KHMoveTowards(this MonoBehaviour monoBehaviour, Vector3 targetPos, float moveSpeed)
+            => monoBehaviour.transform.KHMoveTowards(targetPos, moveSpeed);
+
+
+        /// <summary>
+        /// Moves the <see cref="Transform"/> in a specified <paramref name="direction"/> at a constant <paramref name="moveSpeed"/>.
+        /// </summary>
+        /// <param name="transform">The Transform to move.</param>
+        /// <param name="direction">The direction to move in.</param>
+        /// <param name="moveSpeed">The speed at which to move, in units per call.</param>
+        public static void KHMove(this Transform transform, Vector3 direction, float moveSpeed)
         {
-            return monoBehaviour.transform.KHMoveTowards(targetPos, moveSpeed);
+            transform.position += (Vector3)GetDir(transform.position, transform.position + direction) * moveSpeed;
         }
 
         #endregion
@@ -458,12 +468,12 @@ namespace KH
         {
             if (current == null)
             {
-                Debug.LogError($"{nameof(current)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(current)} is NULL");
                 return Vector2.zero;
             }
             if (target == null)
             {
-                Debug.LogError($"{nameof(target)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(target)} is NULL");
                 return Vector2.zero;
             }
 
@@ -484,12 +494,12 @@ namespace KH
         {
             if (current == null)
             {
-                Debug.LogError($"{nameof(current)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(current)} is NULL");
                 return Vector2.zero;
             }
             if (target == null)
             {
-                Debug.LogError($"{nameof(target)} is NULL".AddColorTag(XMLColors.Red));
+                KHDebug.LogError($"{nameof(target)} is NULL");
                 return Vector2.zero;
             }
 

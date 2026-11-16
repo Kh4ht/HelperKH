@@ -119,7 +119,7 @@ namespace KH
         {
             if (string.IsNullOrEmpty(key))
             {
-                Debug.LogError($"{nameof(KHPoolManager)} Cannot register a pool for '{(prefab != null ? prefab.name : "null")}' with an empty key. Is its ID generated?", prefab);
+                KHDebug.LogError($"{nameof(KHPoolManager)} Cannot register a pool for '{(prefab != null ? prefab.name : "null")}' with an empty key. Is its ID generated?", prefab);
                 return null;
             }
 
@@ -139,14 +139,14 @@ namespace KH
                 {
                     if (existing is not KHObjectPool<T>)
                     {
-                        Debug.LogError($"{nameof(KHPoolManager)} Key '{key}' is already used by a pool of a different type. Requested {typeof(T).Name}.");
+                        KHDebug.LogError($"{nameof(KHPoolManager)} Key '{key}' is already used by a pool of a different type. Requested {typeof(T).Name}.");
                         return null;
                     }
                     if (existingInfo != null && existingInfo.Persistent != persistent)
-                        Debug.LogWarning($"{nameof(KHPoolManager)} Pool '{key}' already exists with persistent = {existingInfo.Persistent}. The new value ({persistent}) is ignored.");
+                        KHDebug.LogWarning($"{nameof(KHPoolManager)} Pool '{key}' already exists with persistent = {existingInfo.Persistent}. The new value ({persistent}) is ignored.");
 
                     if (showLogMessage)
-                        Debug.Log($"{nameof(KHPoolManager)} Pool '{key}' is already registered. Returning existing pool.".AddColorTag(XMLColors.White));
+                        KHDebug.Log($"{nameof(KHPoolManager)} Pool '{key}' is already registered. Returning existing pool.");
 
                     return GetPool<T>(key);
                 }
@@ -172,11 +172,11 @@ namespace KH
                 if (pool is KHObjectPool<T> typed)
                     return typed;
 
-                Debug.LogError($"[PoolManager] Pool '{key}' exists but is not a pool of {typeof(T).Name}. Two prefabs may share the same key.");
+                KHDebug.LogError($"[PoolManager] Pool '{key}' exists but is not a pool of {typeof(T).Name}. Two prefabs may share the same key.");
                 return null;
             }
 
-            Debug.LogError($"[PoolManager] No pool registered with key '{key}'.");
+            KHDebug.LogError($"[PoolManager] No pool registered with key '{key}'.");
             return null;
         }
 

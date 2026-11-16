@@ -10,7 +10,10 @@ public interface IKHSubsystem
     void IUpdate() { }
     void IFixedUpdate() { }
     void IOnTriggerEnter2D(Collider2D collision) { }
+    void IInit() { }
     void IReset() { }
+
+    void IOnDrawGizmosSelected() { }
 }
 
 public static class KHHelper
@@ -78,6 +81,15 @@ public static class KHHelper
             system.IOnTriggerEnter2D(collision);
     }
 
+    public static void InitAll(this List<IKHSubsystem> systems)
+    {
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IInit();
+    }
+
     public static void ResetAll(this List<IKHSubsystem> systems)
     {
         if (systems == null)
@@ -85,5 +97,14 @@ public static class KHHelper
 
         foreach (var system in systems)
             system.IReset();
+    }
+
+    public static void OnDrawGizmosSelectedAll(this List<IKHSubsystem> systems)
+    {
+        if (systems == null)
+            return;
+
+        foreach (var system in systems)
+            system.IOnDrawGizmosSelected();
     }
 }

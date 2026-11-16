@@ -90,16 +90,6 @@ namespace KH
         }
 
         #endregion
-        #region CONSTRUCTOR
-
-        public KHHealthController(int initialMaxHealth, float initialHealth)
-        {
-            // this.owner = owner;
-            _maxHealth = initialMaxHealth;
-            _health = initialHealth;
-        }
-
-        #endregion
         #region PRIVATE
 
         private static void AddListener(List<Action> list, Action listener)
@@ -199,6 +189,15 @@ namespace KH
 
         #endregion
         #region PUBLIC
+
+        public void Init(int initialMaxHealth, float initialHealth)
+        {
+            _maxHealth = initialMaxHealth;
+            _health = initialHealth;
+
+            _isDead = false;
+            lastDamageTime = -1f;
+        }
 
         /// <summary>
         /// Returns how many seconds have passed since the entity last took damage.

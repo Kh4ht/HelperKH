@@ -27,30 +27,5 @@ namespace KH.Utils
                 _ => new Vector2(0, height), // default fallback
             };
         }
-
-        public static string AddColorTag(this string message, XMLColors color)
-        {
-            string openTag = $"<b><color={Extract(color)}>";
-            string closeTag = $"</b></color>";
-
-            return openTag + message + closeTag;
-        }
-
-        private static string Extract(XMLColors color)
-        {
-            switch (color)
-            {
-                case XMLColors.Red:
-                    return "#ffd9d9";
-
-                case XMLColors.Yellow:
-                    return "yellow";
-
-                case XMLColors.White:
-                    return "white";
-            }
-
-            return "white";
-        }
     }
 }
